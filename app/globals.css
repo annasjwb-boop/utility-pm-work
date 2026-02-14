@@ -1,0 +1,527 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ===========================
+   Exelon GridIQ Design System
+   Based on Nexus Black Style Guide
+   =========================== */
+
+:root {
+  /* Primary Palette - Muted slate/teal for professional feel */
+  --primary-50: #f0fdfa;
+  --primary-100: #ccfbf1;
+  --primary-200: #99f6e4;
+  --primary-300: #5eead4;
+  --primary-400: #2dd4bf;
+  --primary-500: #5b8a8a;
+  --primary-600: #4a7373;
+  --primary-700: #3d5f5f;
+  --primary-800: #334d4d;
+  --primary-900: #2a3f3f;
+  
+  /* Background Colors - Pure black theme, no blue tint */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-panel: #0d0d0d;
+  --bg-card: #080808;
+  --bg-elevated: #111111;
+  
+  /* Border Colors */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-soft: rgba(255, 255, 255, 0.15);
+  --border-medium: rgba(255, 255, 255, 0.10);
+  
+  /* Semantic Colors - More muted, professional */
+  --success: #6db89b;
+  --error: #c97a7a;
+  --warning: #c9a86c;
+  --info: #7a8eb8;
+  --tool: #6ba3b8;
+  
+  /* Accent - Subtle warm tone */
+  --accent: #a89078;
+}
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: #ffffff;
+  --color-primary: var(--primary-500);
+  --font-sans: "Suisse Intl", system-ui, -apple-system, sans-serif;
+  --font-mono: "PP Supply Mono", "Courier New", Consolas, monospace;
+}
+
+/* Font Loading */
+@font-face {
+  font-family: "Suisse Intl";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local("Suisse Intl"), local("SuisseIntl-Regular"),
+       url("https://fonts.cdnfonts.com/s/14917/SuisseIntl-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Suisse Intl";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local("Suisse Intl Medium"), local("SuisseIntl-Medium"),
+       url("https://fonts.cdnfonts.com/s/14917/SuisseIntl-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Suisse Intl";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local("Suisse Intl SemiBold"), local("SuisseIntl-SemiBold"),
+       url("https://fonts.cdnfonts.com/s/14917/SuisseIntl-SemiBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Suisse Intl";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local("Suisse Intl Bold"), local("SuisseIntl-Bold"),
+       url("https://fonts.cdnfonts.com/s/14917/SuisseIntl-Bold.woff") format("woff");
+}
+
+/* Fallback to Inter if Suisse isn't available */
+@font-face {
+  font-family: "Suisse Intl";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2") format("woff2");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: white;
+  font-family: "Suisse Intl", system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===========================
+   Custom Scrollbar
+   =========================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ===========================
+   Glass Effects
+   =========================== */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: saturate(1.2) blur(12px);
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: saturate(1.15) blur(10px);
+}
+
+.glass-input:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* ===========================
+   Panel Backgrounds
+   =========================== */
+.panel-bg {
+  background-color: var(--bg-panel);
+}
+
+.card-grid-bg {
+  background-color: var(--bg-card);
+  position: relative;
+}
+
+.card-grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ===========================
+   Soft Divider
+   =========================== */
+.soft-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.23);
+}
+
+/* ===========================
+   Animations
+   =========================== */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes delayedFadeIn {
+  0%, 80% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.wiggle {
+  animation: wiggle 2.5s ease-in-out infinite;
+}
+
+.fade-300 {
+  animation: fadeIn 300ms ease-in;
+}
+
+.delayed-fade-in {
+  animation: delayedFadeIn 5s ease-in-out forwards;
+}
+
+.duration-600 {
+  transition-duration: 600ms;
+}
+
+/* Vessel marker float animation */
+.vessel-marker {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pulse animation for alerts */
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: inherit;
+  animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  z-index: -1;
+}
+
+/* ===========================
+   Status Indicators
+   =========================== */
+.status-operational { color: var(--success); }
+.status-maintenance { color: var(--warning); }
+.status-idle { color: rgba(255, 255, 255, 0.4); }
+.status-alert { color: var(--error); }
+
+/* ===========================
+   Card Hover Effects
+   =========================== */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================
+   Progress Bar
+   =========================== */
+@keyframes progressPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.progress-animated {
+  animation: progressPulse 2s ease-in-out infinite;
+}
+
+/* ===========================
+   Skeleton Loading
+   =========================== */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===========================
+   Focus Styles (Accessibility)
+   =========================== */
+*:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* ===========================
+   Reduced Motion
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===========================
+   Leaflet Map Overrides
+   =========================== */
+.leaflet-container {
+  background: var(--bg-primary) !important;
+  font-family: inherit !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--bg-panel) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--bg-panel) !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--bg-panel) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ===========================
+   Visually Hidden (SR Only)
+   =========================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===========================
+   Troubleshoot Panel Response Styling
+   =========================== */
+.troubleshoot-response {
+  line-height: 1.6;
+}
+
+.troubleshoot-response > p:first-child {
+  margin-top: 0;
+}
+
+.troubleshoot-response > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Section dividers */
+.troubleshoot-response > div + div {
+  margin-top: 0.75rem;
+}
+
+/* Links in responses */
+.troubleshoot-response a {
+  color: rgba(147, 197, 253, 0.9);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.troubleshoot-response a:hover {
+  color: rgba(191, 219, 254, 1);
+}
+
+/* Code blocks in responses */
+.troubleshoot-response pre {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.troubleshoot-response pre code {
+  background: none;
+  padding: 0;
+  font-size: 12px;
+}
+
+/* Tables in responses */
+.troubleshoot-response table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.troubleshoot-response th {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.troubleshoot-response td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Work order card styling */
+.troubleshoot-response .work-order-card,
+.troubleshoot-response .loto-procedure,
+.troubleshoot-response .equipment-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+}
+
+/* Selection option hover effects */
+.troubleshoot-response [data-option-value] {
+  cursor: pointer;
+}
+
+.troubleshoot-response [data-option-value]:active {
+  transform: scale(0.98);
+}
+
+/* Pre-formatted HTML response styling */
+.troubleshoot-html-response {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.troubleshoot-html-response h1,
+.troubleshoot-html-response h2,
+.troubleshoot-html-response h3,
+.troubleshoot-html-response h4 {
+  color: white;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.troubleshoot-html-response h1 { font-size: 1.25rem; }
+.troubleshoot-html-response h2 { font-size: 1.125rem; }
+.troubleshoot-html-response h3 { font-size: 1rem; }
+.troubleshoot-html-response h4 { font-size: 0.875rem; }
+
+.troubleshoot-html-response p {
+  margin: 0.75rem 0;
+}
+
+.troubleshoot-html-response ul,
+.troubleshoot-html-response ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.troubleshoot-html-response li {
+  margin: 0.375rem 0;
+}
+
+.troubleshoot-html-response strong {
+  color: white;
+  font-weight: 600;
+}
+
+.troubleshoot-html-response em {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.troubleshoot-html-response blockquote {
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.troubleshoot-html-response hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 1.5rem 0;
+}
