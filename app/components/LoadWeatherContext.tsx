@@ -246,23 +246,22 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
 
         {/* Load Signal */}
         <div className="p-3 pb-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-violet-400" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Load Signal — 7 Day</span>
-            </div>
-            <div className="flex items-center gap-3 text-[10px]">
-              <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
-              <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
-              <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
-              {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
-            </div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Activity className="w-3.5 h-3.5 text-violet-400" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Load Signal — 7 Day</span>
           </div>
           <div className="rounded overflow-hidden bg-white/[0.02]">
             <LoadSparkline points={loadProfile} width={800} height={44} />
           </div>
           <div className="flex justify-between mt-1 text-[8px] text-white/20 font-mono px-0.5">
             <span>7d ago</span><span>5d</span><span>3d</span><span>Yesterday</span><span>Now</span>
+          </div>
+          {/* Stats row */}
+          <div className="flex items-center gap-4 mt-2 pt-1.5 border-t border-white/[0.04] text-[10px]">
+            <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
+            <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
+            <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
+            {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
           </div>
         </div>
 
