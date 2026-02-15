@@ -532,7 +532,7 @@ export default function RiskIntelligencePage() {
                     <div className="flex-1 h-4 rounded overflow-hidden" style={{ background: c.barTrack }}>
                       <div className="h-full rounded flex items-center justify-end pr-1.5 transition-all duration-700"
                         style={{ width: `${(d.hours / maxImpact) * 100}%`, background: remapColor(d.color, isDark) }}>
-                        <span className="text-[9px] font-mono text-white/90">{(d.hours / 1e6).toFixed(1)}M</span>
+                        <span className="text-[9px] font-mono" style={{ color: '#fff' }}>{(d.hours / 1e6).toFixed(1)}M</span>
                       </div>
                     </div>
                   </div>
