@@ -340,7 +340,7 @@ function UnifiedTree() {
   return (
     <div className="space-y-0">
       {/* ═══ Row labels ═══ */}
-      <div className="relative" style={{ height: TREE_H }}>
+      <div className="relative isolate" style={{ height: TREE_H }}>
 
         {/* Row label column */}
         <div className="absolute left-0 top-0 w-[70px] h-full pointer-events-none z-10">
@@ -360,7 +360,7 @@ function UnifiedTree() {
         </div>
 
         {/* ═══ SVG CONNECTION LAYER ═══ */}
-        <svg className="absolute inset-0 w-full pointer-events-none z-0" style={{ height: TREE_H }} viewBox={`0 0 ${VB_W} ${TREE_H}`} preserveAspectRatio="none">
+        <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox={`0 0 ${VB_W} ${TREE_H}`} preserveAspectRatio="none">
 
           {/* Per-cluster vertical connections (3 branches each) */}
           {TREE_CLUSTERS.map((cluster, ci) => {
