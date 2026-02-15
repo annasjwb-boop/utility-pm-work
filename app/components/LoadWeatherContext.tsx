@@ -83,8 +83,6 @@ function generateLoadProfile(baseLoad: number, seed: number): LoadPoint[] {
 
 function generateLoadStress(loadProfile: LoadPoint[], baseLoad: number, health: number, age: number, seed: number): LoadStressMetrics {
   const rng = seededRng(seed + 3333);
-
-  // Thermal cycles: crossings above 70% threshold (winding expansion/contraction)
   const threshold = 70;
   let cycles = 0;
   let wasAbove = loadProfile[0].load > threshold;
@@ -93,32 +91,21 @@ function generateLoadStress(loadProfile: LoadPoint[], baseLoad: number, health: 
     if (isAbove && !wasAbove) cycles++;
     wasAbove = isAbove;
   }
-
-  // Max swing: largest hour-to-hour delta
   let maxSwing = 0;
   for (let i = 1; i < loadProfile.length; i++) {
     maxSwing = Math.max(maxSwing, Math.abs(loadProfile[i].load - loadProfile[i - 1].load));
   }
-
-  // Overload scaling with health (worse health → historically overloaded more)
   const overloadFactor = (100 - health) / 50;
   const overloadEvents12mo = Math.floor((8 + rng() * 12) * overloadFactor);
   const overloadHours12mo = Math.floor(overloadEvents12mo * (2 + rng() * 6));
   const emergencyLoadEvents = Math.floor(overloadEvents12mo * (0.15 + rng() * 0.2));
-
-  // IEEE C57.91 loss-of-life acceleration
   const avgLoad = loadProfile.reduce((s, p) => s + p.load, 0) / loadProfile.length;
   const peakLoad = Math.max(...loadProfile.map(p => p.load));
   const loadFactor = Math.round(avgLoad / peakLoad * 100) / 100;
-
-  // Hotspot rise: ~55°C at rated, scales with load^1.6
   const hotspotRiseC = Math.round((55 * (avgLoad / 100) ** 1.6 + rng() * 5) * 10) / 10;
-
-  // Aging factor: age + thermal stress
   const ageFactor = Math.min(2.5, 1 + (age - 25) * 0.03);
   const loadAgingFactor = avgLoad > 80 ? Math.pow(2, (hotspotRiseC - 55) / 6) : 1.0;
   const lossOfLifeFactor = Math.round(Math.max(0.5, ageFactor * loadAgingFactor) * 100) / 100;
-
   return { thermalCycles7d: cycles, maxSwingAmplitude: Math.round(maxSwing * 10) / 10, overloadEvents12mo, overloadHours12mo, lossOfLifeFactor, loadFactor, hotspotRiseC, emergencyLoadEvents };
 }
 
@@ -139,34 +126,22 @@ function generateWeather(seed: number, health: number): WeatherContext {
 function generateEnvironmentalExposure(seed: number, health: number, age: number, kv: string, weather: WeatherContext): EnvironmentalExposure {
   const rng = seededRng(seed + 7777);
   const kvNum = parseInt(kv) || 69;
-
-  // Installation type from voltage class
   const installationType = kvNum >= 115 ? 'Outdoor substation' : kvNum >= 34 ? 'Pad-mount (enclosed)' : rng() > 0.5 ? 'Pad-mount (enclosed)' : 'Vault (underground)';
   const isOutdoor = installationType.includes('Outdoor');
   const isVault = installationType.includes('Vault');
-
   const baseFT = isOutdoor ? 45 + Math.floor(rng() * 30) : isVault ? 5 + Math.floor(rng() * 10) : 20 + Math.floor(rng() * 15);
   const freezeThawCycles12mo = Math.floor(baseFT * (1 + (age - 20) * 0.005));
-
   const baseHumidity = isVault ? 2800 + Math.floor(rng() * 1200) : isOutdoor ? 1200 + Math.floor(rng() * 800) : 600 + Math.floor(rng() * 500);
   const highHumidityHours12mo = Math.floor(baseHumidity * (1 + (100 - health) * 0.005));
-
   const extremeHeatDays12mo = isOutdoor ? 25 + Math.floor(rng() * 30) : isVault ? 5 + Math.floor(rng() * 8) : 12 + Math.floor(rng() * 15);
-
   const lightningBase = isOutdoor ? 3 + Math.floor(rng() * 8) : isVault ? 0 : Math.floor(rng() * 2);
   const lightningEvents12mo = weather.icon === 'storm' ? lightningBase + 2 : lightningBase;
-
   const tempSwingRange12mo = isOutdoor ? 95 + Math.floor(rng() * 25) : isVault ? 35 + Math.floor(rng() * 15) : 65 + Math.floor(rng() * 20);
-
   const precipitationDays12mo = isOutdoor ? 85 + Math.floor(rng() * 40) : isVault ? 0 : 30 + Math.floor(rng() * 20);
-
   const windLoadEvents12mo = isOutdoor ? 8 + Math.floor(rng() * 15) : 0;
-
   const corrosionScore = (highHumidityHours12mo / 4000) + (age / 80) + (isOutdoor ? 0.3 : isVault ? 0.4 : 0.1);
   const corrosionIndex = corrosionScore > 1.2 ? 'High' : corrosionScore > 0.8 ? 'Elevated' : corrosionScore > 0.4 ? 'Moderate' : 'Low';
-
   const uvExposureRating = !isOutdoor ? 'Minimal' : age > 35 ? 'Severe' : age > 20 ? 'High' : 'Moderate';
-
   return { installationType, freezeThawCycles12mo, highHumidityHours12mo, extremeHeatDays12mo, lightningEvents12mo, tempSwingRange12mo, precipitationDays12mo, windLoadEvents12mo, corrosionIndex, uvExposureRating };
 }
 
@@ -222,13 +197,14 @@ function LoadSparkline({ points, width = 320, height = 48 }: { points: LoadPoint
   );
 }
 
+/** Stacked label/value stat — label on top, value below. Works at any container width. */
 function WarnStat({ label, value, unit, threshold, above = true }: { label: string; value: number; unit?: string; threshold: number; above?: boolean }) {
   const isWarn = above ? value >= threshold : value <= threshold;
   const display = typeof value === 'number' && value >= 1000 ? value.toLocaleString() : value;
   return (
-    <div className="flex items-center gap-1">
-      <span className="text-[8px] text-white/25 uppercase tracking-wide">{label}</span>
-      <span className={`text-[9px] font-mono font-medium ${isWarn ? 'text-rose-400' : 'text-white/55'}`}>{display}{unit || ''}</span>
+    <div className="min-w-0">
+      <div className="text-[7px] text-white/25 uppercase tracking-wide leading-tight truncate">{label}</div>
+      <div className={`text-[10px] font-mono font-medium leading-tight ${isWarn ? 'text-rose-400' : 'text-white/55'}`}>{display}{unit || ''}</div>
     </div>
   );
 }
@@ -265,10 +241,11 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
 
   return (
     <div className="rounded-lg border border-white/8 bg-white/[0.015] mb-4 overflow-hidden">
+      {/* ═══ Top row: sparkline + weather ═══ */}
       <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5">
 
-        {/* ═══ Load Signal ═══ */}
-        <div className="p-3">
+        {/* Load Signal */}
+        <div className="p-3 pb-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-violet-400" />
@@ -287,40 +264,16 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
           <div className="flex justify-between mt-1 text-[8px] text-white/20 font-mono px-0.5">
             <span>7d ago</span><span>5d</span><span>3d</span><span>Yesterday</span><span>Now</span>
           </div>
-
-          {/* ── Load Stress Metrics ── */}
-          <div className="mt-2.5 pt-2 border-t border-white/[0.04]">
-            <div className="flex items-center gap-1 mb-1.5">
-              <Gauge className="w-3 h-3 text-violet-400/50" />
-              <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">Lifetime Load Stress</span>
-            </div>
-            <div className="grid grid-cols-4 gap-x-4 gap-y-1">
-              <WarnStat label="Thermal cycles (7d)" value={loadStress.thermalCycles7d} threshold={14} />
-              <WarnStat label="Max swing" value={loadStress.maxSwingAmplitude} unit="%" threshold={15} />
-              <WarnStat label="Load factor" value={loadStress.loadFactor} threshold={0.6} above={false} />
-              <WarnStat label="Hotspot rise" value={loadStress.hotspotRiseC} unit="°C" threshold={55} />
-              <WarnStat label="Overloads (12 mo)" value={loadStress.overloadEvents12mo} threshold={12} />
-              <WarnStat label="Overload hours" value={loadStress.overloadHours12mo} unit="h" threshold={40} />
-              <WarnStat label="Emergency loads" value={loadStress.emergencyLoadEvents} threshold={3} />
-              <div className="flex items-center gap-1">
-                <span className="text-[8px] text-white/25 uppercase tracking-wide">IEEE aging</span>
-                <span className={`text-[9px] font-mono font-bold ${
-                  loadStress.lossOfLifeFactor > 2 ? 'text-rose-400' : loadStress.lossOfLifeFactor > 1.5 ? 'text-amber-400' : 'text-emerald-400'
-                }`}>{loadStress.lossOfLifeFactor}×</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* ═══ Weather & Context ═══ */}
-        <div className="p-3 w-[300px] flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 mb-0.5">
+        {/* Weather */}
+        <div className="p-3 pb-2 w-[260px] flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
             <Thermometer className="w-3.5 h-3.5 text-sky-400" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Weather / Context</span>
           </div>
-
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-white/[0.04] text-sky-400 flex-shrink-0">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-white/[0.04] text-sky-400 flex-shrink-0">
               {WEATHER_ICONS[weather.icon]}
             </div>
             <div className="min-w-0">
@@ -328,43 +281,66 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
               <div className="text-[10px] text-white/40 font-mono">{weather.tempF}°F · {weather.humidity}% RH</div>
             </div>
           </div>
-
           <p className="text-[9px] text-white/40 leading-relaxed">{weather.forecast}</p>
-
           <div className={`flex items-center gap-1.5 px-2 py-1 rounded border text-[9px] font-medium ${riskStyle.text} ${riskStyle.bg} ${riskStyle.border}`}>
             <AlertTriangle className="w-3 h-3 flex-shrink-0" />
             <span>{weather.riskFactor}</span>
           </div>
+        </div>
+      </div>
 
-          {/* ── Environmental Exposure ── */}
-          <div className="mt-1 pt-2 border-t border-white/[0.04]">
-            <div className="flex items-center gap-1 mb-1.5">
-              <ShieldAlert className="w-3 h-3 text-sky-400/50" />
-              <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">12-Month Exposure</span>
-            </div>
+      {/* ═══ Bottom row: stress metrics + exposure ═══ */}
+      <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5 border-t border-white/[0.04]">
 
-            <div className="flex items-center gap-1 mb-1.5">
-              <span className="text-[8px] text-white/25 uppercase tracking-wide">Install</span>
-              <span className="text-[9px] font-medium text-white/60">{envExposure.installationType}</span>
+        {/* Load Stress */}
+        <div className="px-3 py-2">
+          <div className="flex items-center gap-1 mb-1.5">
+            <Gauge className="w-3 h-3 text-violet-400/50" />
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">Lifetime Load Stress</span>
+          </div>
+          <div className="grid grid-cols-4 gap-x-3 gap-y-1.5">
+            <WarnStat label="Thermal cycles (7d)" value={loadStress.thermalCycles7d} threshold={14} />
+            <WarnStat label="Max swing" value={loadStress.maxSwingAmplitude} unit="%" threshold={15} />
+            <WarnStat label="Load factor" value={loadStress.loadFactor} threshold={0.6} above={false} />
+            <WarnStat label="Hotspot rise" value={loadStress.hotspotRiseC} unit="°C" threshold={55} />
+            <WarnStat label="Overloads (12 mo)" value={loadStress.overloadEvents12mo} threshold={12} />
+            <WarnStat label="Overload hours" value={loadStress.overloadHours12mo} unit="h" threshold={40} />
+            <WarnStat label="Emergency loads" value={loadStress.emergencyLoadEvents} threshold={3} />
+            <div className="min-w-0">
+              <div className="text-[7px] text-white/25 uppercase tracking-wide leading-tight">IEEE aging</div>
+              <div className={`text-[10px] font-mono font-bold leading-tight ${
+                loadStress.lossOfLifeFactor > 2 ? 'text-rose-400' : loadStress.lossOfLifeFactor > 1.5 ? 'text-amber-400' : 'text-emerald-400'
+              }`}>{loadStress.lossOfLifeFactor}×</div>
             </div>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-              <WarnStat label="Freeze-thaw" value={envExposure.freezeThawCycles12mo} unit=" cyc" threshold={60} />
-              <WarnStat label="Temp range" value={envExposure.tempSwingRange12mo} unit="°F" threshold={100} />
-              <WarnStat label="High RH hrs" value={envExposure.highHumidityHours12mo} unit="h" threshold={2000} />
-              <WarnStat label="Extreme heat" value={envExposure.extremeHeatDays12mo} unit="d" threshold={35} />
-              <WarnStat label="Lightning" value={envExposure.lightningEvents12mo} unit=" events" threshold={5} />
-              <WarnStat label="Precip days" value={envExposure.precipitationDays12mo} unit="d" threshold={100} />
-              <WarnStat label="Wind loads" value={envExposure.windLoadEvents12mo} unit=" events" threshold={12} />
-              <div className="flex items-center gap-1">
-                <span className="text-[8px] text-white/25 uppercase tracking-wide">Corrosion</span>
-                <span className={`text-[9px] font-mono font-medium ${corrosionColors[envExposure.corrosionIndex] || 'text-white/55'}`}>{envExposure.corrosionIndex}</span>
-              </div>
+        {/* Environmental Exposure */}
+        <div className="px-3 py-2 w-[260px]">
+          <div className="flex items-center gap-1 mb-1.5">
+            <ShieldAlert className="w-3 h-3 text-sky-400/50" />
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">12-Month Exposure</span>
+          </div>
+          <div className="flex items-center gap-1 mb-1.5">
+            <span className="text-[7px] text-white/25 uppercase tracking-wide">Install</span>
+            <span className="text-[9px] font-medium text-white/60">{envExposure.installationType}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+            <WarnStat label="Freeze-thaw" value={envExposure.freezeThawCycles12mo} unit=" cyc" threshold={60} />
+            <WarnStat label="Temp range" value={envExposure.tempSwingRange12mo} unit="°F" threshold={100} />
+            <WarnStat label="High RH hrs" value={envExposure.highHumidityHours12mo} unit="h" threshold={2000} />
+            <WarnStat label="Extreme heat" value={envExposure.extremeHeatDays12mo} unit="d" threshold={35} />
+            <WarnStat label="Lightning" value={envExposure.lightningEvents12mo} unit=" events" threshold={5} />
+            <WarnStat label="Precip days" value={envExposure.precipitationDays12mo} unit="d" threshold={100} />
+            <WarnStat label="Wind loads" value={envExposure.windLoadEvents12mo} unit=" events" threshold={12} />
+            <div className="min-w-0">
+              <div className="text-[7px] text-white/25 uppercase tracking-wide leading-tight">Corrosion</div>
+              <div className={`text-[10px] font-mono font-medium leading-tight ${corrosionColors[envExposure.corrosionIndex] || 'text-white/55'}`}>{envExposure.corrosionIndex}</div>
             </div>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-[8px] text-white/25 uppercase tracking-wide">UV exposure</span>
-              <span className={`text-[9px] font-mono font-medium ${uvColors[envExposure.uvExposureRating] || 'text-white/55'}`}>{envExposure.uvExposureRating}</span>
-            </div>
+          </div>
+          <div className="mt-1.5">
+            <div className="text-[7px] text-white/25 uppercase tracking-wide leading-tight">UV exposure</div>
+            <div className={`text-[10px] font-mono font-medium leading-tight ${uvColors[envExposure.uvExposureRating] || 'text-white/55'}`}>{envExposure.uvExposureRating}</div>
           </div>
         </div>
       </div>
