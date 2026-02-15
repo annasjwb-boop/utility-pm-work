@@ -209,18 +209,46 @@ export default function RiskIntelligencePage() {
       });
       const opcoObj = OPCOS.find(o => o.id === a.opco);
       const failureCost = ((a.customers * 0.012 * a.load / 100 * (100 - a.health) / 100) * 100).toFixed(0);
+      const trendColor = a.riskTrend === 'critical' ? currentC.mkCrit : a.riskTrend === 'degrading' ? currentC.mkFair : currentC.mkGood;
+      const trendLabel = a.riskTrend === 'critical' ? '▼ Critical' : a.riskTrend === 'degrading' ? '↘ Degrading' : '● Stable';
+      const trendBg = a.riskTrend === 'critical' ? (currentC.bg === '#000' ? 'rgba(244,63,94,0.12)' : 'rgba(220,38,38,0.08)') : a.riskTrend === 'degrading' ? (currentC.bg === '#000' ? 'rgba(251,191,36,0.12)' : 'rgba(180,83,9,0.08)') : (currentC.bg === '#000' ? 'rgba(34,197,94,0.12)' : 'rgba(22,163,74,0.08)');
+      const sectionHead = `font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${currentC.popKey};padding:6px 0 3px;margin-top:2px`;
+      const row = `display:flex;justify-content:space-between;padding:2.5px 0;border-bottom:1px solid ${currentC.popDivider}`;
+      const key = `font-size:10px;color:${currentC.popKey}`;
+      const val = `font-size:10px;color:${currentC.popVal};font-family:monospace`;
+      const pill = (color: string, bgc: string) => `font-size:9px;font-weight:600;color:${color};background:${bgc};padding:1px 6px;border-radius:4px;font-family:monospace`;
+      const tag = `display:inline-block;font-size:9px;color:${currentC.popKey};background:${currentC.popDivider};padding:1px 5px;border-radius:3px;margin:1px 2px 1px 0`;
+
       const m = Leaf.marker([a.lat, a.lng], { icon }).bindPopup(`
-        <div style="font-family:'DM Sans',sans-serif">
-          <div style="font-size:12px;font-weight:600;color:${currentC.popTitle};margin-bottom:4px">${a.name}</div>
-          <div style="font-size:10px;color:${currentC.popSub};margin-bottom:6px">${a.tag} · ${a.opco} · ${opcoObj?.territory || ''}</div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Health Index</span><span style="font-size:10px;color:${col};font-family:monospace">${a.health}%</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Age</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.age} years</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Load Factor</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.load}%</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Voltage Class</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.kv} kV</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Customers Served</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.customers.toLocaleString()}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:10px;color:${currentC.popKey}">Failure Impact</span><span style="font-size:10px;color:${a.health < 50 ? currentC.mkCrit : a.load > 80 ? currentC.mkFair : currentC.popVal};font-family:monospace">$${failureCost}K/hr</span></div>
+        <div style="font-family:'DM Sans',sans-serif;min-width:240px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:${currentC.popTitle}">${a.name}</div>
+              <div style="font-size:10px;color:${currentC.popSub};margin-top:1px">${a.tag} · ${a.opco} · ${opcoObj?.territory || ''}</div>
+            </div>
+            <span style="${pill(trendColor, trendBg)}">${trendLabel}</span>
+          </div>
+
+          <div style="${sectionHead}">Asset Status</div>
+          <div style="${row}"><span style="${key}">Health Index</span><span style="font-size:10px;color:${col};font-family:monospace;font-weight:600">${a.health}%</span></div>
+          <div style="${row}"><span style="${key}">Age</span><span style="${val}">${a.age} yr</span></div>
+          <div style="${row}"><span style="${key}">Load Factor</span><span style="${val}">${a.load}%</span></div>
+          <div style="${row}"><span style="${key}">Voltage / Customers</span><span style="${val}">${a.kv} kV · ${a.customers.toLocaleString()}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:2.5px 0"><span style="${key}">Failure Impact</span><span style="font-size:10px;color:${a.health < 50 ? currentC.mkCrit : a.load > 80 ? currentC.mkFair : currentC.popVal};font-family:monospace;font-weight:600">$${failureCost}K/hr</span></div>
+
+          <div style="${sectionHead}">Predictive Maintenance</div>
+          <div style="${row}"><span style="${key}">Time to Failure</span><span style="font-size:10px;color:${a.riskTrend === 'critical' ? currentC.mkCrit : a.riskTrend === 'degrading' ? currentC.mkFair : currentC.popVal};font-family:monospace;font-weight:600">${a.ttf}</span></div>
+          <div style="${row}"><span style="${key}">Failure Mode</span><span style="${val}">${a.failureMode}</span></div>
+          <div style="${row}"><span style="${key}">Repair Window</span><span style="font-size:10px;color:${a.repairWindow === 'Immediate' ? currentC.mkCrit : currentC.popVal};font-family:monospace;font-weight:${a.repairWindow === 'Immediate' ? '600' : '400'}">${a.repairWindow}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:2.5px 0"><span style="${key}">Repair Duration</span><span style="${val}">${a.repairDuration}</span></div>
+
+          <div style="${sectionHead}">Required Materials</div>
+          <div style="padding:2px 0 4px;line-height:1.8">${a.materials.map(mat => `<span style="${tag}">${mat}</span>`).join('')}</div>
+
+          <div style="${sectionHead}">Required Skills</div>
+          <div style="padding:2px 0 2px;line-height:1.8">${a.skills.map(sk => `<span style="${tag}">${sk}</span>`).join('')}</div>
         </div>
-      `, { maxWidth: 260 });
+      `, { maxWidth: 320 });
       groups.assets.addLayer(m);
     });
   }, [assets]);
@@ -592,9 +620,9 @@ export default function RiskIntelligencePage() {
         .leaflet-control-zoom a { background: ${c.zoomBg} !important; color: ${c.zoomColor} !important; border-color: ${c.zoomBorder} !important; }
         .leaflet-control-zoom a:hover { background: ${c.zoomHoverBg} !important; color: ${c.zoomHoverColor} !important; }
         .leaflet-control-attribution { display: none !important; }
-        .leaflet-popup-content-wrapper { background: ${c.popBg} !important; border: 1px solid ${c.popBorder} !important; border-radius: 8px !important; color: ${c.t1} !important; box-shadow: 0 8px 32px rgba(0,0,0,${c.popShadowAlpha}) !important; }
+        .leaflet-popup-content-wrapper { background: ${c.popBg} !important; border: 1px solid ${c.popBorder} !important; border-radius: 10px !important; color: ${c.t1} !important; box-shadow: 0 8px 32px rgba(0,0,0,${c.popShadowAlpha}) !important; }
         .leaflet-popup-tip { background: ${c.popBg} !important; border: 1px solid ${c.popBorder} !important; }
-        .leaflet-popup-content { margin: 12px 14px !important; font-size: 11px !important; line-height: 1.5 !important; }
+        .leaflet-popup-content { margin: 12px 14px !important; font-size: 11px !important; line-height: 1.5 !important; max-height: 420px; overflow-y: auto; }
         .scrollbar-thin::-webkit-scrollbar { width: 4px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: ${c.scrollThumb}; border-radius: 2px; }

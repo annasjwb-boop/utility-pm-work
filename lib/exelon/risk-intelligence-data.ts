@@ -51,6 +51,14 @@ export interface SubstationAsset {
   load: number;
   kv: string;
   customers: number;
+  // Predictive maintenance fields
+  ttf: string;              // Time to failure (predicted)
+  repairWindow: string;     // Recommended repair window
+  repairDuration: string;   // Estimated repair time
+  materials: string[];      // Required materials
+  skills: string[];         // Required crew skills
+  failureMode: string;      // Primary predicted failure mode
+  riskTrend: 'stable' | 'degrading' | 'critical'; // Trend direction
 }
 
 export interface OutageTrend {
@@ -432,6 +440,16 @@ export function generateFleet(): { assets: SubstationAsset[]; stats: FleetStats 
   const assets: SubstationAsset[] = [];
   let globalId = 1;
 
+  const FAILURE_MODES_BY_AGE = [
+    { mode: 'Insulation degradation', minAge: 25, materials: ['Insulating oil', 'Kraft paper', 'Gaskets'], skills: ['Oil processing', 'Vacuum treatment'] },
+    { mode: 'Bushing failure', minAge: 15, materials: ['Replacement bushing', 'Gasket kit', 'Transformer oil'], skills: ['HV bushing replacement', 'Crane operation'] },
+    { mode: 'Tap changer wear', minAge: 10, materials: ['OLTC contacts', 'Drive mechanism parts', 'Diverter oil'], skills: ['OLTC overhaul', 'Mechanical adjustment'] },
+    { mode: 'Cooling system failure', minAge: 20, materials: ['Radiator fans', 'Oil pump', 'Temperature sensors'], skills: ['Cooling system repair', 'Electrical testing'] },
+    { mode: 'Winding fault', minAge: 30, materials: ['Copper conductor', 'Insulation wrap', 'Core steel'], skills: ['Winding replacement', 'Factory rebuild'] },
+    { mode: 'Oil contamination', minAge: 5, materials: ['Transformer oil', 'Filter elements', 'Desiccant'], skills: ['Oil filtration', 'DGA sampling'] },
+    { mode: 'Gasket/seal leak', minAge: 8, materials: ['Nitrile gaskets', 'Sealant', 'Drain valve'], skills: ['Seal replacement', 'Oil containment'] },
+  ];
+
   for (const [opcoId, geo] of Object.entries(OPCO_GEO)) {
     const names = SUBSTATION_NAMES[opcoId];
     for (let i = 0; i < geo.substationCount; i++) {
@@ -447,6 +465,30 @@ export function generateFleet(): { assets: SubstationAsset[]; stats: FleetStats 
       const nameIdx = i % names.length;
       const suffix = parseFloat(vClass.kv) >= 69 ? ` ${vClass.kv}kV` : ` Sub #${Math.floor(rng() * 9) + 1}`;
 
+      // Predictive maintenance generation
+      const eligible = FAILURE_MODES_BY_AGE.filter(f => age >= f.minAge);
+      const fm = eligible.length > 0 ? eligible[Math.floor(rng() * eligible.length)] : FAILURE_MODES_BY_AGE[5]; // default oil contamination
+
+      // Time to failure: correlated with health
+      const ttfMonths = health < 30 ? Math.floor(rng() * 6 + 1)
+        : health < 50 ? Math.floor(rng() * 18 + 6)
+        : health < 70 ? Math.floor(rng() * 36 + 18)
+        : Math.floor(rng() * 60 + 36);
+      const ttf = ttfMonths < 12 ? `${ttfMonths} mo` : `${(ttfMonths / 12).toFixed(1)} yr`;
+
+      // Repair window: based on urgency
+      const repairWindow = health < 30 ? 'Immediate' : health < 50 ? 'Within 30 days' : health < 70 ? 'Next outage cycle' : 'Scheduled PM';
+
+      // Repair duration: based on failure mode severity
+      const isHeavy = fm.mode.includes('Winding') || fm.mode.includes('Bushing');
+      const hours = isHeavy ? Math.floor(rng() * 72 + 48) : Math.floor(rng() * 24 + 4);
+      const repairDuration = hours >= 48 ? `${Math.floor(hours / 24)}d ${hours % 24}h` : `${hours}h`;
+
+      // Risk trend
+      const riskTrend = health < 40 && load > 70 ? 'critical' as const
+        : health < 60 || (age > 35 && load > 60) ? 'degrading' as const
+        : 'stable' as const;
+
       assets.push({
         tag: `${opcoId.toUpperCase().replace(/ /g, '')}-${String(globalId).padStart(4, '0')}`,
         name: names[nameIdx] + suffix,
@@ -455,6 +497,13 @@ export function generateFleet(): { assets: SubstationAsset[]; stats: FleetStats 
         age, health, load,
         kv: vClass.kv,
         customers,
+        ttf,
+        repairWindow,
+        repairDuration,
+        materials: fm.materials,
+        skills: fm.skills,
+        failureMode: fm.mode,
+        riskTrend,
       });
       globalId++;
     }
