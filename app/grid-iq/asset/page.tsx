@@ -13,6 +13,7 @@ import { useTheme } from '@/lib/theme-context';
 import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { getSubstationAsset, synthesizeDiagnostic, type AssetDiagnostic } from '@/lib/exelon/asset-bridge';
 import { OPCOS } from '@/lib/exelon/risk-intelligence-data';
+import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
 
 // ── Icon map (string → component) ──
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -205,6 +206,9 @@ function AssetGridIQ() {
       {/* Diagnostic Tree */}
       <div className="overflow-x-auto px-5 py-6">
         <div className="mx-auto" style={{ maxWidth: 900, minWidth: 700 }}>
+
+          {/* Load & Weather Context */}
+          <LoadWeatherContext assetTag={a.tag} baseLoad={a.load} health={a.health} />
 
           {/* Row labels */}
           <div className="relative isolate" style={{ height: TREE_H }}>

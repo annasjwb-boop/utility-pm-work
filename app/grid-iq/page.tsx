@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { DEMO_SCENARIOS, type DemoScenario, type DecisionSupport } from '@/lib/demo-scenarios';
 import { ThemeToggle } from '@/app/components/ThemeToggle';
+import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
 
 // ════════════════════════════════════════════════════════════════════════
 // TYPES & CONFIG
@@ -339,6 +340,23 @@ function UnifiedTree() {
 
   return (
     <div className="space-y-0">
+      {/* ═══ Load & Weather Context ═══ */}
+      <div className={`grid grid-cols-3 gap-3 mb-2 transition-all duration-500 ${reveal >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+        {TREE_CLUSTERS.map(cluster => {
+          const scenario = DEMO_SCENARIOS.find(s => s.id === cluster.scenarioId);
+          return (
+            <div key={cluster.id} className="relative">
+              <div className="absolute -top-0.5 left-3 text-[8px] font-bold uppercase tracking-widest text-white/25 z-10">{scenario?.assetName?.split(' ')[0] || cluster.id}</div>
+              <LoadWeatherContext
+                assetTag={scenario?.assetTag || cluster.id}
+                baseLoad={cluster.id === 'c1' ? 82 : cluster.id === 'c2' ? 71 : 78}
+                health={cluster.id === 'c1' ? 38 : cluster.id === 'c2' ? 44 : 46}
+              />
+            </div>
+          );
+        })}
+      </div>
+
       {/* ═══ Row labels ═══ */}
       <div className="relative isolate" style={{ height: TREE_H }}>
 
