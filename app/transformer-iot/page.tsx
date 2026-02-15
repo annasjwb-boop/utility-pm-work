@@ -1042,7 +1042,7 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
           <Calendar className="w-3.5 h-3.5 text-violet-400/40" />
           Work Order History — 24 Months
         </h2>
-        <div className="flex items-center gap-2 text-[10px]">
+        <div className="flex items-center gap-2 text-xs">
           <span className="text-white/30">{orders.length} total</span>
           <span className="text-white/20">·</span>
           <span className="text-white/30">${(totalCost / 1000).toFixed(0)}K spent</span>
@@ -1066,7 +1066,7 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
           const isActive = filter === t;
           return (
             <button key={t} onClick={() => setFilter(t)}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all ${
+              className={`px-2 py-0.5 rounded text-xs font-medium border transition-all ${
                 isActive
                   ? style ? `${style.color} ${style.bg} ${style.border}` : 'text-white/70 bg-white/10 border-white/15'
                   : 'text-white/30 bg-transparent border-white/5 hover:border-white/10'
@@ -1093,10 +1093,10 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-white/70 truncate">{wo.title}</span>
+                    <span className="text-sm font-medium text-white/70 truncate">{wo.title}</span>
                     {wo.finding && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+                  <div className="flex items-center gap-1.5 text-xs text-white/30">
                     <span className="font-mono">{wo.date}</span>
                     <span>·</span>
                     <span className={`font-medium ${style.color}`}>{wo.type}</span>
@@ -1107,11 +1107,11 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${WO_STATUS_STYLES[wo.status] || ''}`}>{wo.status}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${WO_STATUS_STYLES[wo.status] || ''}`}>{wo.status}</span>
                   {wo.priority !== 'routine' && (
-                    <span className={`text-[10px] font-bold uppercase ${WO_PRIORITY_STYLES[wo.priority]}`}>{wo.priority}</span>
+                    <span className={`text-xs font-bold uppercase ${WO_PRIORITY_STYLES[wo.priority]}`}>{wo.priority}</span>
                   )}
-                  <span className="text-[10px] font-mono text-white/25">${wo.cost >= 1000 ? `${(wo.cost / 1000).toFixed(0)}K` : wo.cost}</span>
+                  <span className="text-xs font-mono text-white/25">${wo.cost >= 1000 ? `${(wo.cost / 1000).toFixed(0)}K` : wo.cost}</span>
                 </div>
               </button>
 
@@ -1121,10 +1121,10 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
                   {wo.finding && (
                     <div className="flex items-start gap-1.5 mt-1.5 px-2 py-1.5 rounded bg-amber-500/[0.06] border border-amber-500/15">
                       <AlertTriangle className="w-3 h-3 text-amber-400/60 flex-shrink-0 mt-0.5" />
-                      <span className="text-[10px] text-amber-400/70">{wo.finding}</span>
+                      <span className="text-xs text-amber-400/70">{wo.finding}</span>
                     </div>
                   )}
-                  <div className="text-[9px] text-white/20 mt-1.5 font-mono">{wo.id}</div>
+                  <div className="text-[10px] text-white/20 mt-1.5 font-mono">{wo.id}</div>
                 </div>
               )}
             </div>
