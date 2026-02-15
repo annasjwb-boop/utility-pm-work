@@ -85,7 +85,7 @@ export default function Dashboard() {
   
   const router = useRouter();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [leftPanel, setLeftPanel] = useState<'critical' | 'assets' | 'programs'>('critical');
+  const [leftPanel, setLeftPanel] = useState<'critical' | 'programs'>('critical');
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
   const criticalFleetAssets = useMemo(() =>
@@ -168,7 +168,7 @@ export default function Dashboard() {
             }`}
           >
             <div className="flex-shrink-0 p-2 border-b border-white/[0.04]">
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => setLeftPanel('critical')}
                   className={`flex items-center justify-center gap-1 px-2 py-2 rounded-lg text-[13px] font-medium transition-all ${
@@ -180,17 +180,6 @@ export default function Dashboard() {
                   <AlertTriangle className="h-3.5 w-3.5" />
                   Critical
                   <span className={`text-[9px] px-1 py-px rounded font-bold ${leftPanel === 'critical' ? 'bg-rose-500/20 text-rose-300' : 'bg-white/[0.06] text-white/30'}`}>{criticalFleetAssets.length}</span>
-                </button>
-                <button
-                  onClick={() => setLeftPanel('assets')}
-                  className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                    leftPanel === 'assets'
-                      ? 'bg-white/[0.08] text-white/90'
-                      : 'text-white/35 hover:text-white/55 hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <Zap className="h-3.5 w-3.5" />
-                  Assets
                 </button>
                 <button
                   onClick={() => setLeftPanel('programs')}
@@ -264,119 +253,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </>
-            )}
-
-            {leftPanel === 'assets' && (
-              <>
-                {(() => {
-                  const programsAtRisk = getProgramsAtRisk();
-                  return programsAtRisk.length > 0 ? (
-                    <button
-                      onClick={() => setLeftPanel('programs')}
-                      className="w-full p-3 border-b border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all text-left"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-white/50" />
-                          <span className="text-sm font-medium text-white/60">
-                            {programsAtRisk.length} Program{programsAtRisk.length > 1 ? 's' : ''} Behind Schedule
-                          </span>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-white/30" />
-                      </div>
-                      <p className="text-[10px] text-white/30 mt-1">
-                        {programsAtRisk.map(p => p.name).slice(0, 2).join(', ')}
-                        {programsAtRisk.length > 2 ? ` +${programsAtRisk.length - 2} more` : ''}
-                      </p>
-                    </button>
-                  ) : null;
-                })()}
-
-                <div className="p-4 border-b border-white/[0.06]">
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
-                    Exelon Grid Status
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    <MetricCard
-                      title="Operational"
-                      value={gridStats.operationalAssets}
-                      subtitle={`of ${gridStats.totalAssets}`}
-                      icon={<Radio className="h-4 w-4" />}
-                      color="success"
-                      compact
-                      info="Grid assets in operational status with active telemetry"
-                      infoSource="live"
-                    />
-                    <MetricCard
-                      title="Health Index"
-                      value={`${gridStats.avgHealthIndex}%`}
-                      icon={<Heart className="h-4 w-4" />}
-                      color={gridStats.avgHealthIndex >= 70 ? 'success' : 'warning'}
-                      compact
-                      info="Average health index across all monitored grid assets based on DGA, thermal, and load data"
-                      infoSource="live"
-                    />
-                    <MetricCard
-                      title="Customers"
-                      value={`${(gridStats.totalCustomersServed / 1000000).toFixed(1)}M`}
-                      icon={<Users className="h-4 w-4" />}
-                      color="primary"
-                      compact
-                      info="Total customers served by monitored grid assets across all Exelon OpCos"
-                      infoSource="static"
-                    />
-                    <MetricCard
-                      title="Capacity"
-                      value={`${(gridStats.totalCapacityMVA / 1000).toFixed(1)} GVA`}
-                      icon={<Gauge className="h-4 w-4" />}
-                      color="primary"
-                      compact
-                      info="Total rated capacity across monitored transformers and substations"
-                      infoSource="static"
-                    />
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-xs">
-                    <span className="text-white/30">{gridStats.criticalAssets} critical assets</span>
-                    <span className="flex items-center gap-1 text-white/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
-                      SCADA Live
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">
-                      Grid Assets ({sortedAssets.length})
-                    </h3>
-                    {assetsWithIssues > 0 && (
-                      <span className="flex items-center gap-1 text-[10px] font-medium text-white/50 bg-white/[0.06] px-2 py-0.5 rounded-full">
-                        <AlertTriangle className="h-3 w-3" />
-                        {assetsWithIssues} need attention
-                      </span>
-                    )}
-                  </div>
-                  {sortedAssets.map(asset => {
-                    const programs = getProgramsByAsset(asset.assetTag);
-                    const program = programs[0];
-                    const assignedProgram = program
-                      ? { id: program.id, name: program.name, sponsor: program.sponsor }
-                      : undefined;
-                    
-                    return (
-                      <AssetCard
-                        key={asset.assetTag}
-                        asset={asset}
-                        compact
-                        selected={selectedAssetTag === asset.assetTag}
-                        onClick={() => handleSelectAsset(asset.assetTag)}
-                        issueSummary={issueSummaries[asset.assetTag]}
-                        assignedProgram={assignedProgram}
-                      />
-                    );
-                  })}
                 </div>
               </>
             )}
@@ -517,7 +393,6 @@ export default function Dashboard() {
                                         onClick={e => {
                                           e.stopPropagation();
                                           handleSelectAsset(tag);
-                                          setLeftPanel('assets');
                                         }}
                                       >
                                         {a.name.split(' ').slice(0, 2).join(' ')}
