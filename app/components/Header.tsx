@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Leaf,
   Activity,
+  MapPin,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -41,6 +42,7 @@ export function Header({
 
   // Navigation items — Exelon GridIQ modules
   const navItems = [
+    { href: '/risk-intelligence', label: 'Asset Map', icon: MapPin },
     { href: '/grid-iq', label: 'Grid IQ', icon: Brain },
     { href: '/transformer-iot', label: 'Asset IoT', icon: Activity },
     { href: '/orchestration', label: 'Dispatch', icon: LayoutGrid },
