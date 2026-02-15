@@ -217,7 +217,9 @@ function AssetGridIQ() {
         <div className="mx-auto" style={{ maxWidth: 1100, minWidth: 800 }}>
 
           {/* Load & Weather Context */}
-          <LoadWeatherContext assetTag={a.tag} baseLoad={a.load} health={a.health} age={a.age} kv={a.kv} />
+          <div className="mb-4">
+            <LoadWeatherContext assetTag={a.tag} baseLoad={a.load} health={a.health} age={a.age} kv={a.kv} />
+          </div>
 
           {/* Row labels */}
           <div className="relative isolate" style={{ height: TREE_H }}>

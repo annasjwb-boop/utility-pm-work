@@ -349,7 +349,7 @@ function UnifiedTree() {
         {TREE_CLUSTERS.map(cluster => {
           const scenario = DEMO_SCENARIOS.find(s => s.id === cluster.scenarioId);
           return (
-            <div key={cluster.id}>
+            <div key={cluster.id} className="h-full">
               <LoadWeatherContext
                 assetTag={scenario?.assetTag || cluster.id}
                 baseLoad={cluster.id === 'c1' ? 82 : cluster.id === 'c2' ? 71 : 78}
