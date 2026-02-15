@@ -831,7 +831,7 @@ function DecisionPanel({ decisionSupport, onApprove, onDefer }: {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
-          <button onClick={onApprove} className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-violet-700 to-purple-800 text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+          <button onClick={onApprove} className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-violet-700 to-purple-800 font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2" style={{ color: "#fff" }}>
             <CheckCircle className="w-4 h-4" /> Approve & Execute
           </button>
           <button onClick={onDefer} className="flex-1 py-2.5 rounded-lg border border-white/10 text-white/60 font-medium text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
