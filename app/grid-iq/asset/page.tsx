@@ -79,11 +79,11 @@ function PulseDot({ pathId, dur = 3, delay = 0, color = 'rgba(255,255,255,0.4)' 
 // ── Layout ──
 const ROW = { trigger: 60, agent: 195, finding: 330, deep: 475, rootCause: 625, scenario: 780 };
 const TREE_H = 870;
-const STAGGER = [-25, 0, 25];
+const STAGGER = [-30, 0, 30];
 const CX = 50; // center X percent
 
 function branchX(idx: number): number {
-  return CX + (idx - 1) * 14;
+  return CX + (idx - 1) * 22;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -214,7 +214,7 @@ function AssetGridIQ() {
 
       {/* Diagnostic Tree */}
       <div className="overflow-x-auto px-5 py-6">
-        <div className="mx-auto" style={{ maxWidth: 900, minWidth: 700 }}>
+        <div className="mx-auto" style={{ maxWidth: 1100, minWidth: 800 }}>
 
           {/* Load & Weather Context */}
           <LoadWeatherContext assetTag={a.tag} baseLoad={a.load} health={a.health} />
@@ -237,9 +237,9 @@ function AssetGridIQ() {
             </div>
 
             {/* SVG connections */}
-            <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox="0 0 900 720" preserveAspectRatio="none">
+            <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox="0 0 1100 870" preserveAspectRatio="none">
               {[0, 1, 2].map(bi => {
-                const bx = branchX(bi) * 9; // percent → viewbox coords
+                const bx = branchX(bi) * 11; // percent → viewbox coords
                 const st = STAGGER[bi];
                 const convId = `conv-${bi}`;
                 const agent = agents[bi];
@@ -248,7 +248,7 @@ function AssetGridIQ() {
                     <AnimatedPath d={`M ${bx},${ROW.trigger + 14 + st} C ${bx},${ROW.trigger + 40 + st} ${bx},${ROW.agent - 35} ${bx},${ROW.agent - 16}`} visible={reveal >= 2} delay={bi * 80} color={svgC.line} width={1.5} />
                     <AnimatedPath d={`M ${bx},${ROW.agent + 28} C ${bx},${ROW.agent + 55} ${bx},${ROW.finding - 30 + st} ${bx},${ROW.finding - 10 + st}`} visible={reveal >= 3} delay={bi * 80} color={svgC.line} width={1.5} />
                     <AnimatedPath d={`M ${bx},${ROW.finding + 22 + st} L ${bx},${ROW.deep - 14 + st}`} visible={reveal >= 4} delay={bi * 100} color={agent?.dotColor || svgC.line} width={2} />
-                    <AnimatedPath id={convId} d={`M ${bx},${ROW.deep + 28 + st} C ${bx},${ROW.deep + 55 + st} ${CX * 9},${ROW.rootCause - 45} ${CX * 9},${ROW.rootCause - 18}`} visible={reveal >= 5} delay={bi * 120} color={agent?.dotColor} width={2.5} />
+                    <AnimatedPath id={convId} d={`M ${bx},${ROW.deep + 28 + st} C ${bx},${ROW.deep + 55 + st} ${CX * 11},${ROW.rootCause - 45} ${CX * 11},${ROW.rootCause - 18}`} visible={reveal >= 5} delay={bi * 120} color={agent?.dotColor} width={2.5} />
                     {reveal >= 5 && <PulseDot pathId={convId} dur={2.5} delay={bi * 0.3} color={agent?.dotColor || 'rgba(255,255,255,0.3)'} />}
                   </g>
                 );
@@ -256,8 +256,8 @@ function AssetGridIQ() {
 
               {/* Cross-links */}
               {diag.crossLinks.map((label, li) => {
-                const x1 = branchX(0) * 9;
-                const x2 = branchX(2) * 9;
+                const x1 = branchX(0) * 11;
+                const x2 = branchX(2) * 11;
                 const midX = (x1 + x2) / 2;
                 const midY = ROW.deep + 6 - 40;
                 const pathId = `xlink-${li}`;
@@ -285,7 +285,7 @@ function AssetGridIQ() {
                 <div key={`t-${ti}`}
                   className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
                   style={{ left: `${x}%`, top: ROW.trigger - 18 + st, transitionDelay: `${ti * 100}ms` }}>
-                  <div className={`giq-node flex items-center gap-1.5 px-2.5 py-1.5 rounded border max-w-[170px] ${TRIGGER_COLORS[trigger.color]}`}>
+                  <div className={`giq-node flex items-center gap-1.5 px-2.5 py-1.5 rounded border max-w-[200px] ${TRIGGER_COLORS[trigger.color]}`}>
                     <TIcon className="w-3 h-3 flex-shrink-0" />
                     <div className="min-w-0 overflow-hidden">
                       <div className="text-[10px] font-bold leading-tight truncate">{trigger.label}</div>
@@ -325,7 +325,7 @@ function AssetGridIQ() {
                 <div key={`f-${fi}`}
                   className={`absolute -translate-x-1/2 z-10 transition-all duration-400 ${reveal >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
                   style={{ left: `${x}%`, top: ROW.finding - 10 + st, transitionDelay: `${fi * 120}ms` }}>
-                  <div className={`giq-node text-[9px] font-mono font-semibold px-2 py-1 rounded border w-[155px] leading-snug overflow-hidden ${
+                  <div className={`giq-node text-[9px] font-mono font-semibold px-2 py-1 rounded border w-[180px] leading-snug overflow-hidden ${
                     isCrit ? 'border-rose-500/30 bg-rose-500/[0.10] text-rose-300' : 'border-amber-500/30 bg-amber-500/[0.10] text-amber-300'
                   }`}>
                     <span className="line-clamp-2">{finding.text}</span>
@@ -343,7 +343,7 @@ function AssetGridIQ() {
                 <div key={`d-${di}`}
                   className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
                   style={{ left: `${x}%`, top: ROW.deep - 14 + st, transitionDelay: `${di * 140}ms` }}>
-                  <div className={`giq-node w-[150px] px-2 py-1.5 rounded border overflow-hidden ${agent?.borderColor || 'border-white/10'} ${agent?.bgColor || 'bg-white/[0.03]'}`}>
+                  <div className={`giq-node w-[180px] px-2 py-1.5 rounded border overflow-hidden ${agent?.borderColor || 'border-white/10'} ${agent?.bgColor || 'bg-white/[0.03]'}`}>
                     <div className={`text-[8px] font-bold uppercase tracking-wider ${agent?.color || 'text-white/50'} mb-0.5 truncate`}>{da.method}</div>
                     <div className="text-[9px] text-white/70 leading-snug line-clamp-2">{da.text}</div>
                   </div>
@@ -365,9 +365,9 @@ function AssetGridIQ() {
             </div>
 
             {/* SVG connector: root cause → scenario */}
-            <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox="0 0 900 870" preserveAspectRatio="none">
+            <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox="0 0 1100 870" preserveAspectRatio="none">
               <AnimatedPath
-                d={`M ${CX * 9},${ROW.rootCause + 30} L ${CX * 9},${ROW.scenario - 25}`}
+                d={`M ${CX * 11},${ROW.rootCause + 30} L ${CX * 11},${ROW.scenario - 25}`}
                 visible={reveal >= 6} color={svgC.lineStrong} width={2.5} />
             </svg>
 
