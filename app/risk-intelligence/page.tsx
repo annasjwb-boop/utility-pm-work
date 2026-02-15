@@ -36,16 +36,16 @@ const T = (theme: Theme) => {
     card: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
     border: d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)',
     borderS: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)',
-    t1: d ? 'rgba(255,255,255,0.9)' : '#111827',
-    t2: d ? 'rgba(255,255,255,0.7)' : '#1f2937',
+    t1: d ? 'rgba(255,255,255,0.9)' : '#1e1b4b',
+    t2: d ? 'rgba(255,255,255,0.7)' : '#312e81',
     t3: d ? 'rgba(255,255,255,0.4)' : '#4b5563',
     t4: d ? 'rgba(255,255,255,0.25)' : '#6b7280',
     t5: d ? 'rgba(255,255,255,0.12)' : '#9ca3af',
     popBg: d ? 'rgba(10,10,10,0.95)' : 'rgba(255,255,255,0.97)',
     popBorder: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
-    popTitle: d ? '#fff' : '#111827', popSub: d ? 'rgba(255,255,255,0.4)' : '#6b7280',
+    popTitle: d ? '#fff' : '#1e1b4b', popSub: d ? 'rgba(255,255,255,0.4)' : '#4b5563',
     popKey: d ? 'rgba(255,255,255,0.3)' : '#6b7280',
-    popVal: d ? 'rgba(255,255,255,0.7)' : '#1f2937',
+    popVal: d ? 'rgba(255,255,255,0.7)' : '#1e1b4b',
     popDivider: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)',
     legendBg: d ? 'rgba(10,10,10,0.92)' : 'rgba(255,255,255,0.96)',
     mapBg: d ? '#0a0a0a' : '#f0f0f0',
@@ -66,38 +66,38 @@ const T = (theme: Theme) => {
     zoomHoverBg: d ? '#222' : '#f0f0f0', zoomHoverColor: d ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
     scrollThumb: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)',
     popShadowAlpha: d ? '0.5' : '0.12',
-    // Theme-aware marker colors: dark=green/amber/red, light=grey/purple/orange-red
-    mkGood: d ? 'rgb(52,211,153)' : 'rgb(148,163,184)',       // slate-400
-    mkGoodBg: d ? 'rgba(52,211,153,0.25)' : 'rgba(100,116,139,0.3)',
-    mkGoodBdr: d ? 'rgba(52,211,153,0.6)' : 'rgba(100,116,139,0.5)',
+    // Theme-aware marker colors: dark=green/amber/red, light=indigo/purple/orange(alert-only)
+    mkGood: d ? 'rgb(52,211,153)' : 'rgb(67,56,202)',         // indigo-700
+    mkGoodBg: d ? 'rgba(52,211,153,0.25)' : 'rgba(67,56,202,0.25)',
+    mkGoodBdr: d ? 'rgba(52,211,153,0.6)' : 'rgba(67,56,202,0.5)',
     mkFair: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',        // violet-600
-    mkFairBg: d ? 'rgba(245,158,11,0.25)' : 'rgba(124,58,237,0.25)',
+    mkFairBg: d ? 'rgba(245,158,11,0.25)' : 'rgba(124,58,237,0.2)',
     mkFairBdr: d ? 'rgba(245,158,11,0.6)' : 'rgba(124,58,237,0.5)',
-    mkCrit: d ? 'rgb(251,113,133)' : 'rgb(234,88,12)',        // orange-600
-    mkCritBg: d ? 'rgba(244,63,94,0.25)' : 'rgba(234,88,12,0.25)',
-    mkCritBdr: d ? 'rgba(244,63,94,0.6)' : 'rgba(234,88,12,0.6)',
+    mkCrit: d ? 'rgb(251,113,133)' : 'rgb(220,38,38)',        // red-600 (alert only)
+    mkCritBg: d ? 'rgba(244,63,94,0.25)' : 'rgba(220,38,38,0.2)',
+    mkCritBdr: d ? 'rgba(244,63,94,0.6)' : 'rgba(220,38,38,0.5)',
     // Heatmap gradient
     heatGradient: d
       ? { 0.15: '#1a1a2e', 0.3: '#3b0764', 0.5: '#7c2d12', 0.7: '#dc2626', 0.9: '#fbbf24' }
-      : { 0.15: '#e2e8f0', 0.3: '#cbd5e1', 0.5: '#eab308', 0.7: '#ca8a04', 0.9: '#92400e' },
+      : { 0.15: '#e2e8f0', 0.3: '#c4b5fd', 0.5: '#8b5cf6', 0.7: '#6d28d9', 0.9: '#3b0764' },
     // Legend gradient CSS
     heatLegendGrad: d
       ? 'linear-gradient(to right,#1a1a2e,#3b0764,#7c2d12,#dc2626,#fbbf24)'
-      : 'linear-gradient(to right,#e2e8f0,#cbd5e1,#eab308,#ca8a04,#92400e)',
+      : 'linear-gradient(to right,#e2e8f0,#c4b5fd,#8b5cf6,#6d28d9,#3b0764)',
     // Legend dot colors
-    dotGood: d ? 'rgb(52,211,153)' : 'rgb(148,163,184)',
-    dotFair: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',
-    dotCrit: d ? 'rgb(251,113,133)' : 'rgb(234,88,12)',
-    // Stat value colors — purple/blue in light, cyan/amber in dark
-    stPrimary: d ? 'rgb(34,211,238)' : 'rgb(109,40,217)',     // fleet size, main metric
-    stSecondary: d ? 'rgb(251,191,36)' : 'rgb(37,99,235)',    // age, restoration
-    stGood: d ? 'rgb(52,211,153)' : 'rgb(16,185,129)',        // health good
-    stWarn: d ? 'rgb(251,191,36)' : 'rgb(217,119,6)',         // health fair
-    stDanger: d ? 'rgb(251,113,133)' : 'rgb(220,38,38)',      // poor, outages
-    stInfo: d ? 'rgb(56,189,248)' : 'rgb(59,130,246)',        // weather-driven
-    stOrange: d ? 'rgb(251,146,60)' : 'rgb(234,88,12)',       // >40yr
-    subUp: d ? 'rgba(251,113,133,0.7)' : 'rgb(220,38,38)',    // ↑ bad trend
-    subDown: d ? 'rgba(52,211,153,0.7)' : 'rgb(16,185,129)',  // ↓ good trend
+    dotGood: d ? 'rgb(52,211,153)' : 'rgb(67,56,202)',        // indigo-700
+    dotFair: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',       // violet-600
+    dotCrit: d ? 'rgb(251,113,133)' : 'rgb(220,38,38)',       // red-600 (alert only)
+    // Stat value colors — purple/indigo in light, neon in dark
+    stPrimary: d ? 'rgb(34,211,238)' : 'rgb(109,40,217)',     // violet-700
+    stSecondary: d ? 'rgb(251,191,36)' : 'rgb(67,56,202)',    // indigo-700
+    stGood: d ? 'rgb(52,211,153)' : 'rgb(79,70,229)',         // indigo-600
+    stWarn: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',        // violet-600
+    stDanger: d ? 'rgb(251,113,133)' : 'rgb(220,38,38)',      // red-600 (alert)
+    stInfo: d ? 'rgb(56,189,248)' : 'rgb(55,48,163)',         // indigo-800
+    stOrange: d ? 'rgb(251,146,60)' : 'rgb(109,40,217)',      // violet-700
+    subUp: d ? 'rgba(251,113,133,0.7)' : 'rgb(220,38,38)',    // ↑ bad (alert)
+    subDown: d ? 'rgba(52,211,153,0.7)' : 'rgb(67,56,202)',   // ↓ good → indigo
   };
 };
 
@@ -126,17 +126,18 @@ const WEATHER_ICONS_REACT: Record<string, React.ReactNode> = {
   thunder: <CloudLightning className="w-4 h-4" />,
 };
 
-// ─── Chart color remapper: dark neon → light purple/blue/neutral ───
+// ─── Chart color remapper: dark neon → light purple/indigo/blue only ───
+// Light mode: ONLY purple/blue/dark-grey for charts. Orange/red reserved for alerts.
 const CHART_COLOR_MAP: Record<string, string> = {
-  'rgb(251,113,133)': 'rgb(220,38,38)',    // rose → red-600
-  'rgb(251,191,36)': 'rgb(217,119,6)',     // amber → amber-600
-  'rgb(52,211,153)': 'rgb(16,185,129)',    // emerald → emerald-500
-  'rgb(167,139,250)': 'rgb(124,58,237)',   // violet → violet-600
-  'rgb(56,189,248)': 'rgb(37,99,235)',     // sky → blue-600
-  'rgb(34,211,238)': 'rgb(79,70,229)',     // cyan → indigo-600
-  'rgb(251,146,60)': 'rgb(234,88,12)',     // orange → orange-600
-  'rgba(255,255,255,0.2)': 'rgba(0,0,0,0.15)',
-  'rgba(244,63,94,0.35)': 'rgba(220,38,38,0.25)',
+  'rgb(251,113,133)': 'rgb(109,40,217)',    // rose → violet-700 (primary purple)
+  'rgb(251,191,36)': 'rgb(79,70,229)',      // amber → indigo-600
+  'rgb(52,211,153)': 'rgb(59,130,246)',     // emerald → blue-500
+  'rgb(167,139,250)': 'rgb(99,102,241)',    // violet → indigo-500
+  'rgb(56,189,248)': 'rgb(67,56,202)',      // sky → indigo-700
+  'rgb(34,211,238)': 'rgb(124,58,237)',     // cyan → violet-600
+  'rgb(251,146,60)': 'rgb(55,48,163)',      // orange → indigo-800
+  'rgba(255,255,255,0.2)': 'rgba(30,27,75,0.12)',
+  'rgba(244,63,94,0.35)': 'rgba(109,40,217,0.2)',
 };
 const remapColor = (color: string, isDark: boolean) => isDark ? color : (CHART_COLOR_MAP[color] || color);
 

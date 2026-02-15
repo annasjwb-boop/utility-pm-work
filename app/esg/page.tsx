@@ -78,15 +78,21 @@ import {
 import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { useTheme } from '@/lib/theme-context';
 
-const COLORS = ['#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
+const COLORS_DARK = ['#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
+const COLORS_LIGHT = ['#6d28d9', '#4f46e5', '#4338ca', '#7c3aed', '#3730a3', '#312e81'];
 
 export default function ESGPage() {
   const router = useRouter();
   const { isDark } = useTheme();
   const chartGrid = isDark ? '#333' : '#e5e7eb';
-  const chartAxis = isDark ? '#666' : '#9ca3af';
-  const chartTick = isDark ? '#888' : '#6b7280';
-  const chartTooltip = { backgroundColor: isDark ? '#1a1a1a' : '#fff', border: `1px solid ${isDark ? '#333' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#fff' : '#111' };
+  const chartAxis = isDark ? '#666' : '#6b7280';
+  const chartTick = isDark ? '#888' : '#4b5563';
+  const chartTooltip = { backgroundColor: isDark ? '#1a1a1a' : '#fff', border: `1px solid ${isDark ? '#333' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#fff' : '#1e1b4b' };
+  const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT;
+  const co2Stroke = isDark ? '#ef4444' : '#6d28d9';
+  const targetStroke = isDark ? '#10b981' : '#4338ca';
+  const maintStroke = isDark ? '#f59e0b' : '#7c3aed';
+  const barFill = isDark ? '#3b82f6' : '#4f46e5';
   const [assetEmissions, setAssetEmissions] = useState<AssetEmissions[]>([]);
   const [gridSummary, setGridSummary] = useState<GridEmissionsSummary | null>(null);
   const [complianceTargets, setComplianceTargets] = useState<ComplianceTarget[]>([]);
@@ -627,12 +633,12 @@ export default function ESGPage() {
                     <AreaChart data={emissionsTrend}>
                       <defs>
                         <linearGradient id="colorCO2" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                          <stop offset="5%" stopColor={co2Stroke} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={co2Stroke} stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorMaint" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                          <stop offset="5%" stopColor={maintStroke} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={maintStroke} stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
@@ -642,9 +648,9 @@ export default function ESGPage() {
                         contentStyle={chartTooltip}
                         labelStyle={{ color: '#fff' }}
                       />
-                      <Area type="monotone" dataKey="co2" stroke="#ef4444" strokeWidth={2} fill="url(#colorCO2)" name="CO₂ from Losses (t)" />
-                      <Area type="monotone" dataKey="target" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Target" />
-                      <Area type="monotone" dataKey="maintenanceImpact" stroke="#f59e0b" strokeWidth={2} fill="url(#colorMaint)" name="Maintenance Impact (t)" />
+                      <Area type="monotone" dataKey="co2" stroke={co2Stroke} strokeWidth={2} fill="url(#colorCO2)" name="CO₂ from Losses (t)" />
+                      <Area type="monotone" dataKey="target" stroke={targetStroke} strokeWidth={2} strokeDasharray="5 5" fill="none" name="Target" />
+                      <Area type="monotone" dataKey="maintenanceImpact" stroke={maintStroke} strokeWidth={2} fill="url(#colorMaint)" name="Maintenance Impact (t)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -696,7 +702,7 @@ export default function ESGPage() {
                       <XAxis type="number" stroke={chartAxis} tick={{ fill: chartTick, fontSize: 10 }} />
                       <YAxis type="category" dataKey="name" stroke={chartAxis} tick={{ fill: chartTick, fontSize: 10 }} width={120} />
                       <Tooltip contentStyle={chartTooltip} />
-                      <Bar dataKey="co2" fill="#3b82f6" radius={[0, 4, 4, 0]} name="CO₂ (tonnes)" />
+                      <Bar dataKey="co2" fill={barFill} radius={[0, 4, 4, 0]} name="CO₂ (tonnes)" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
