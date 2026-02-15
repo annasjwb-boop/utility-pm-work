@@ -1,7 +1,7 @@
 // @ts-nocheck — Transformer IoT real-time monitoring dashboard
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -27,6 +27,8 @@ import {
   FlaskConical,
   BellRing,
   TrendingDown,
+  Wrench,
+  Calendar,
 } from 'lucide-react';
 import {
   TransformerSensor,
@@ -35,6 +37,8 @@ import {
   DGAReading,
   TransformerAsset,
 } from '@/lib/transformer-iot/types';
+import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
+import { getSubstationAsset, synthesizeWorkOrders, type WorkOrder } from '@/lib/exelon/asset-bridge';
 import {
   generateTransformerAsset,
   generateRecentLoadEvents,
@@ -1037,6 +1041,153 @@ function ThermalDiagram({ transformer }: { transformer: TransformerAsset }) {
 }
 
 // ══════════════════════ MAIN DASHBOARD ═════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// WORK ORDER HISTORY — 24-month maintenance log for critical assets
+// ════════════════════════════════════════════════════════════════
+
+const WO_TYPE_STYLES: Record<string, { color: string; bg: string; border: string }> = {
+  PM:   { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  CM:   { color: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20' },
+  INSP: { color: 'text-sky-400',     bg: 'bg-sky-500/10',     border: 'border-sky-500/20' },
+  EMER: { color: 'text-rose-400',    bg: 'bg-rose-500/10',    border: 'border-rose-500/20' },
+  MOD:  { color: 'text-violet-400',  bg: 'bg-violet-500/10',  border: 'border-violet-500/20' },
+  TEST: { color: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
+};
+
+const WO_STATUS_STYLES: Record<string, string> = {
+  completed: 'text-emerald-400/60 bg-emerald-500/10',
+  'in-progress': 'text-cyan-400/60 bg-cyan-500/10',
+  deferred: 'text-amber-400/60 bg-amber-500/10',
+  cancelled: 'text-white/30 bg-white/5',
+};
+
+const WO_PRIORITY_STYLES: Record<string, string> = {
+  routine: '',
+  high: 'text-amber-400/70',
+  emergency: 'text-rose-400/70',
+};
+
+const WO_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  PM: Wrench,
+  CM: Wrench,
+  INSP: Eye,
+  EMER: AlertTriangle,
+  MOD: Shield,
+  TEST: FlaskConical,
+};
+
+function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
+  const [filter, setFilter] = useState<string>('all');
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const filtered = filter === 'all' ? orders : orders.filter(o => o.type === filter);
+
+  // Summary stats
+  const totalCost = orders.reduce((s, o) => s + o.cost, 0);
+  const typeCounts = orders.reduce((acc, o) => { acc[o.type] = (acc[o.type] || 0) + 1; return acc; }, {} as Record<string, number>);
+  const findings = orders.filter(o => o.finding).length;
+  const deferred = orders.filter(o => o.status === 'deferred').length;
+
+  return (
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xs font-semibold text-white/60 flex items-center gap-2">
+          <Calendar className="w-3.5 h-3.5 text-violet-400/40" />
+          Work Order History — 24 Months
+        </h2>
+        <div className="flex items-center gap-2 text-[9px]">
+          <span className="text-white/30">{orders.length} total</span>
+          <span className="text-white/20">·</span>
+          <span className="text-white/30">${(totalCost / 1000).toFixed(0)}K spent</span>
+          {findings > 0 && <>
+            <span className="text-white/20">·</span>
+            <span className="text-amber-400/60">{findings} findings</span>
+          </>}
+          {deferred > 0 && <>
+            <span className="text-white/20">·</span>
+            <span className="text-rose-400/60">{deferred} deferred</span>
+          </>}
+        </div>
+      </div>
+
+      {/* Type filter tabs */}
+      <div className="flex gap-1 mb-3 flex-wrap">
+        {['all', 'PM', 'CM', 'INSP', 'TEST', 'EMER'].map(t => {
+          const count = t === 'all' ? orders.length : (typeCounts[t] || 0);
+          if (count === 0 && t !== 'all') return null;
+          const style = t === 'all' ? null : WO_TYPE_STYLES[t];
+          const isActive = filter === t;
+          return (
+            <button key={t} onClick={() => setFilter(t)}
+              className={`px-2 py-0.5 rounded text-[9px] font-medium border transition-all ${
+                isActive
+                  ? style ? `${style.color} ${style.bg} ${style.border}` : 'text-white/70 bg-white/10 border-white/15'
+                  : 'text-white/30 bg-transparent border-white/5 hover:border-white/10'
+              }`}>
+              {t === 'all' ? 'All' : t} {count > 0 && <span className="ml-0.5 opacity-60">{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Work order list */}
+      <div className="space-y-0 max-h-[400px] overflow-y-auto">
+        {filtered.map(wo => {
+          const style = WO_TYPE_STYLES[wo.type] || WO_TYPE_STYLES.PM;
+          const Icon = WO_ICONS[wo.type] || ClipboardList;
+          const isExpanded = expanded === wo.id;
+          return (
+            <div key={wo.id}
+              className={`border-b border-white/[0.03] last:border-0 transition-colors ${isExpanded ? 'bg-white/[0.02]' : 'hover:bg-white/[0.01]'}`}>
+              <button onClick={() => setExpanded(isExpanded ? null : wo.id)}
+                className="w-full text-left px-2 py-2 flex items-center gap-2.5">
+                <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${style.bg}`}>
+                  <Icon className={`w-3 h-3 ${style.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-white/70 truncate">{wo.title}</span>
+                    {wo.finding && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[8px] text-white/30">
+                    <span className="font-mono">{wo.date}</span>
+                    <span>·</span>
+                    <span className={`font-medium ${style.color}`}>{wo.type}</span>
+                    <span>·</span>
+                    <span>{wo.crew}</span>
+                    <span>·</span>
+                    <span>{wo.duration}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-[8px] px-1.5 py-0.5 rounded ${WO_STATUS_STYLES[wo.status] || ''}`}>{wo.status}</span>
+                  {wo.priority !== 'routine' && (
+                    <span className={`text-[8px] font-bold uppercase ${WO_PRIORITY_STYLES[wo.priority]}`}>{wo.priority}</span>
+                  )}
+                  <span className="text-[9px] font-mono text-white/25">${wo.cost >= 1000 ? `${(wo.cost / 1000).toFixed(0)}K` : wo.cost}</span>
+                </div>
+              </button>
+
+              {isExpanded && (
+                <div className="px-2 pb-2 pl-[42px] animate-in fade-in duration-200">
+                  <p className="text-[10px] text-white/45 leading-relaxed mb-1">{wo.description}</p>
+                  {wo.finding && (
+                    <div className="flex items-start gap-1.5 mt-1.5 px-2 py-1.5 rounded bg-amber-500/[0.06] border border-amber-500/15">
+                      <AlertTriangle className="w-3 h-3 text-amber-400/60 flex-shrink-0 mt-0.5" />
+                      <span className="text-[9px] text-amber-400/70">{wo.finding}</span>
+                    </div>
+                  )}
+                  <div className="text-[8px] text-white/20 mt-1.5 font-mono">{wo.id}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function TransformerIoTPage() {
   return (
     <Suspense fallback={
@@ -1060,6 +1211,9 @@ function TransformerIoTDashboard() {
   const [dgaHistory, setDGAHistory] = useState<DGAReading[]>([]);
   const [isLive, setIsLive] = useState(true);
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
+
+  const riskAsset = useMemo(() => getSubstationAsset(assetTag), [assetTag]);
+  const workOrders = useMemo(() => riskAsset && riskAsset.health < 50 ? synthesizeWorkOrders(riskAsset) : [], [riskAsset]);
 
   useEffect(() => {
     const tf = generateTransformerAsset(assetTag);
@@ -1203,6 +1357,19 @@ function TransformerIoTDashboard() {
         </div>
       </div>
 
+      {/* Load & Weather Context */}
+      {riskAsset && (
+        <div className="max-w-[2000px] mx-auto px-6 pt-4">
+          <LoadWeatherContext
+            assetTag={assetTag}
+            baseLoad={riskAsset.load}
+            health={riskAsset.health}
+            age={riskAsset.age}
+            kv={riskAsset.kv}
+          />
+        </div>
+      )}
+
       {/* Main Content — clean 2-column layout */}
       <main className="max-w-[2000px] mx-auto px-6 py-4">
         <div className="grid grid-cols-12 gap-6">
@@ -1323,6 +1490,11 @@ function TransformerIoTDashboard() {
               </h2>
               <ThermalDiagram transformer={transformer} />
             </div>
+
+            {/* Work Order History */}
+            {workOrders.length > 0 && (
+              <WorkOrderHistory orders={workOrders} />
+            )}
           </div>
         </div>
       </main>

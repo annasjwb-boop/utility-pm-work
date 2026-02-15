@@ -566,3 +566,199 @@ export function synthesizeScenario(a: SubstationAsset, diag: AssetDiagnostic): D
     decisionSupport,
   };
 }
+
+// ══════════════════════════════════════════════════════════════════
+// WORK ORDER HISTORY — 24-month synthetic maintenance log
+// ══════════════════════════════════════════════════════════════════
+
+export interface WorkOrder {
+  id: string;
+  date: string;            // ISO date
+  type: 'PM' | 'CM' | 'INSP' | 'EMER' | 'MOD' | 'TEST';
+  typeLabel: string;
+  title: string;
+  description: string;
+  duration: string;
+  crew: string;
+  status: 'completed' | 'deferred' | 'cancelled' | 'in-progress';
+  finding?: string;
+  cost: number;
+  priority: 'routine' | 'high' | 'emergency';
+}
+
+const WO_TYPE_LABELS: Record<WorkOrder['type'], string> = {
+  PM: 'Preventive Maintenance',
+  CM: 'Corrective Maintenance',
+  INSP: 'Inspection',
+  EMER: 'Emergency Repair',
+  MOD: 'Modification / Upgrade',
+  TEST: 'Diagnostic Test',
+};
+
+const PM_TEMPLATES = [
+  { title: 'Annual Oil Sampling & DGA', desc: 'Collected oil samples for dissolved gas analysis, moisture, acidity, and dielectric strength testing per IEEE C57.106.', dur: '2h', crew: 'Lab Tech', cost: 1200 },
+  { title: 'Bushing Inspection & Cleaning', desc: 'Visual and IR inspection of all HV/LV bushings. Cleaned porcelain surfaces, checked oil levels, measured power factor.', dur: '4h', crew: 'Line Crew', cost: 2800 },
+  { title: 'Cooling System Service', desc: 'Inspected radiators, fans, and pumps. Cleaned fin surfaces, verified fan rotation, checked oil flow indicators.', dur: '3h', crew: 'Mech Tech', cost: 1800 },
+  { title: 'OLTC Maintenance', desc: 'On-load tap changer contact inspection, oil sampling, operation counter read, and timing test per manufacturer schedule.', dur: '6h', crew: 'Relay Tech', cost: 4500 },
+  { title: 'Gasket & Seal Inspection', desc: 'Inspected all external gaskets and seals for oil seepage. Checked conservator, Buchholz relay, pressure relief device.', dur: '3h', crew: 'Line Crew', cost: 1500 },
+  { title: 'Protective Relay Calibration', desc: 'Tested and calibrated differential, overcurrent, and thermal relays. Verified trip circuits and alarm setpoints.', dur: '4h', crew: 'Relay Tech', cost: 3200 },
+  { title: 'Grounding System Test', desc: 'Measured ground resistance, inspected ground connections, and verified continuity of surge arrester grounding.', dur: '2h', crew: 'Line Crew', cost: 900 },
+];
+
+const CM_TEMPLATES = [
+  { title: 'Oil Leak Repair — Main Tank', desc: 'Repaired gasket leak at main tank flange. Drained oil, replaced gasket, refilled and tested.', dur: '8h', crew: 'Xfmr Crew', cost: 12000 },
+  { title: 'Fan Motor Replacement', desc: 'Replaced failed cooling fan motor. Verified rotation, airflow, and thermal response.', dur: '3h', crew: 'Mech Tech', cost: 4200 },
+  { title: 'Bushing Replacement', desc: 'Replaced degraded HV bushing after elevated power factor test results. Installed OEM replacement.', dur: '16h', crew: 'Xfmr Crew', cost: 35000 },
+  { title: 'OLTC Contact Replacement', desc: 'Replaced worn tap changer contacts after increased contact resistance detected during routine test.', dur: '12h', crew: 'Relay Tech', cost: 18000 },
+  { title: 'Oil Processing / Degassing', desc: 'Processed transformer oil to remove moisture and dissolved gases. Restored dielectric strength to specification.', dur: '24h', crew: 'Oil Service', cost: 8500 },
+  { title: 'Conservator Bladder Repair', desc: 'Replaced deteriorated conservator bladder. Inspected Buchholz relay and silica gel breather.', dur: '6h', crew: 'Xfmr Crew', cost: 7200 },
+];
+
+const INSP_TEMPLATES = [
+  { title: 'Quarterly Visual Inspection', desc: 'Walked down transformer and checked for oil leaks, abnormal sounds, paint condition, ground connections, and clearances.', dur: '1h', crew: 'Operator', cost: 200 },
+  { title: 'IR Thermography Survey', desc: 'Performed infrared scan of bushings, connections, radiators, and cooling equipment. Compared to baseline.', dur: '2h', crew: 'IR Tech', cost: 1500 },
+  { title: 'Ultrasonic / Acoustic Survey', desc: 'Performed acoustic emission scan for partial discharge activity on bushings and winding area.', dur: '2h', crew: 'PD Tech', cost: 2200 },
+  { title: 'Foundation & Civil Inspection', desc: 'Inspected concrete pad, containment berm, fire wall, and drainage system for deterioration.', dur: '1h', crew: 'Civil Eng', cost: 600 },
+];
+
+const TEST_TEMPLATES = [
+  { title: 'Sweep Frequency Response (SFRA)', desc: 'Performed SFRA to detect winding deformation, core displacement, or clamping force changes.', dur: '4h', crew: 'Test Eng', cost: 3500 },
+  { title: 'Bushing Power Factor Test', desc: 'Measured C1 and C2 power factor and capacitance for all bushings per IEEE C57.19.01.', dur: '3h', crew: 'Test Eng', cost: 2800 },
+  { title: 'Winding Resistance Test', desc: 'Measured DC resistance of all windings at all tap positions to detect loose connections or broken strands.', dur: '3h', crew: 'Test Eng', cost: 2400 },
+  { title: 'Turns Ratio Test', desc: 'Verified turns ratio at all tap positions against nameplate. Compared to factory test results.', dur: '2h', crew: 'Test Eng', cost: 1800 },
+  { title: 'Insulation Resistance / PI Test', desc: 'Measured insulation resistance and polarization index for all winding combinations at 5kV.', dur: '2h', crew: 'Test Eng', cost: 1600 },
+];
+
+export function synthesizeWorkOrders(a: SubstationAsset): WorkOrder[] {
+  const rng = seededRng(tagToSeed(a.tag) + 9999);
+  const orders: WorkOrder[] = [];
+  const now = new Date();
+  const healthFactor = (100 - a.health) / 50; // worse health → more work orders
+
+  // Generate 24 months of work orders
+  for (let monthsAgo = 24; monthsAgo >= 0; monthsAgo--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1);
+
+    // Quarterly visual inspection
+    if (monthsAgo % 3 === 0) {
+      const tmpl = INSP_TEMPLATES[0];
+      const day = 5 + Math.floor(rng() * 10);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'INSP', typeLabel: WO_TYPE_LABELS.INSP,
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: monthsAgo === 0 ? 'in-progress' : 'completed',
+        cost: tmpl.cost, priority: 'routine',
+        finding: a.health < 40 && rng() > 0.5 ? 'Oil weep noted at main tank flange' : undefined,
+      });
+    }
+
+    // Semi-annual oil sampling
+    if (monthsAgo % 6 === 0) {
+      const tmpl = PM_TEMPLATES[0];
+      const day = 10 + Math.floor(rng() * 10);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      const hasFinding = a.health < 45 && rng() > 0.3;
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'PM', typeLabel: WO_TYPE_LABELS.PM,
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: 'completed', cost: tmpl.cost, priority: 'routine',
+        finding: hasFinding ? 'Elevated dissolved gases — TDCG trending above IEEE Condition 2' : undefined,
+      });
+    }
+
+    // Annual bushing inspection
+    if (monthsAgo % 12 === 0 && monthsAgo > 0) {
+      const tmpl = PM_TEMPLATES[1];
+      const day = 15 + Math.floor(rng() * 5);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'PM', typeLabel: WO_TYPE_LABELS.PM,
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: 'completed', cost: tmpl.cost, priority: 'routine',
+        finding: a.health < 35 ? 'Bushing C1 power factor 0.8% — approaching action level' : undefined,
+      });
+    }
+
+    // Annual cooling system service
+    if (monthsAgo === 12 || monthsAgo === 0) {
+      const tmpl = PM_TEMPLATES[2];
+      const day = 18 + Math.floor(rng() * 5);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'PM', typeLabel: WO_TYPE_LABELS.PM,
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: monthsAgo === 0 ? 'in-progress' : 'completed',
+        cost: tmpl.cost, priority: 'routine',
+      });
+    }
+
+    // Random additional PM/INSP/TEST depending on health
+    if (rng() < 0.15 + healthFactor * 0.2) {
+      const pool = [...PM_TEMPLATES.slice(3), ...INSP_TEMPLATES.slice(1), ...TEST_TEMPLATES];
+      const tmpl = pool[Math.floor(rng() * pool.length)];
+      const isTest = TEST_TEMPLATES.includes(tmpl);
+      const day = 1 + Math.floor(rng() * 25);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: isTest ? 'TEST' : (INSP_TEMPLATES.includes(tmpl) ? 'INSP' : 'PM'),
+        typeLabel: WO_TYPE_LABELS[isTest ? 'TEST' : (INSP_TEMPLATES.includes(tmpl) ? 'INSP' : 'PM')],
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: rng() > 0.9 ? 'deferred' : 'completed',
+        cost: tmpl.cost, priority: 'routine',
+        finding: a.health < 40 && rng() > 0.6 ? 'Anomaly noted — follow-up recommended' : undefined,
+      });
+    }
+
+    // Corrective maintenance: more likely for poor health
+    if (rng() < healthFactor * 0.15) {
+      const tmpl = CM_TEMPLATES[Math.floor(rng() * CM_TEMPLATES.length)];
+      const day = 1 + Math.floor(rng() * 25);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'CM', typeLabel: WO_TYPE_LABELS.CM,
+        title: tmpl.title, description: tmpl.desc,
+        duration: tmpl.dur, crew: tmpl.crew,
+        status: 'completed', cost: tmpl.cost, priority: 'high',
+        finding: 'Defect corrected — returned to service',
+      });
+    }
+
+    // Emergency: rare, more likely for very poor health
+    if (a.health < 35 && rng() < 0.06) {
+      const day = 1 + Math.floor(rng() * 25);
+      const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+      orders.push({
+        id: `WO-${a.tag.slice(-4)}-${String(orders.length + 1).padStart(3, '0')}`,
+        date: d.toISOString().slice(0, 10),
+        type: 'EMER', typeLabel: WO_TYPE_LABELS.EMER,
+        title: 'Emergency De-energization & Inspection',
+        description: 'Transformer de-energized after Buchholz alarm / sudden gas accumulation. Emergency inspection of tank internals, bushings, and tap changer.',
+        duration: '24h', crew: 'Emergency Crew',
+        status: 'completed', cost: 45000, priority: 'emergency',
+        finding: 'Active arcing detected — winding damage confirmed',
+      });
+    }
+  }
+
+  // Sort by date descending (most recent first)
+  orders.sort((a, b) => b.date.localeCompare(a.date));
+  return orders;
+}
