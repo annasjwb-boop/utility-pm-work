@@ -570,8 +570,6 @@ function UnifiedTree() {
                 <span className={`text-[9px] uppercase tracking-wider font-bold ${config.color}`}>{config.label}</span>
                 <span className="text-[11px] font-bold text-white/90 text-center leading-tight">{scenario.title}</span>
                 <div className="flex items-center gap-1.5 text-[9px] text-white/50">
-                  <span>{scenario.outcome.costAvoided}</span>
-                  <span className="text-white/20">•</span>
                   <span>{scenario.outcome.customersProtected.toLocaleString()} cust.</span>
                 </div>
                 <span className={`text-[9px] font-medium ${isSelected ? 'text-amber-400' : 'text-white/35'}`}>
