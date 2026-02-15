@@ -245,7 +245,8 @@ export default function RiskIntelligencePage() {
   // ─── Initialize Map ───
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
-    const initC = T('dark');
+    const initTheme = theme;
+    const initC = T(initTheme);
 
     const initMap = async () => {
       const L = await import('leaflet');
@@ -259,7 +260,7 @@ export default function RiskIntelligencePage() {
         center: [39.3, -76.6], zoom: 10, zoomControl: true, attributionControl: false,
       });
 
-      tileLayerRef.current = Leaf.tileLayer(TILES.dark, { maxZoom: 19 }).addTo(map);
+      tileLayerRef.current = Leaf.tileLayer(TILES[initTheme], { maxZoom: 19 }).addTo(map);
       mapInstanceRef.current = map;
 
       const groups: Record<string, any> = {};
@@ -346,7 +347,7 @@ export default function RiskIntelligencePage() {
 
     rebuildAssets(Leaf, map, groups, currentC);
     rebuildWeatherPopups(groups, currentC);
-  }, [theme, rebuildAssets, rebuildWeatherPopups, heatData]);
+  }, [theme, mapReady, rebuildAssets, rebuildWeatherPopups, heatData]);
 
   const toggleLayer = useCallback((id: LayerId) => {
     const map = mapInstanceRef.current;
@@ -484,7 +485,7 @@ export default function RiskIntelligencePage() {
         </div>
 
         {/* ─── Map ─── */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           <div ref={mapRef} className="w-full h-full" />
           <div className="absolute bottom-5 left-5 z-[1000] rounded-lg p-3 backdrop-blur-xl transition-colors duration-300"
             style={{ background: c.legendBg, border: `1px solid ${c.border}` }}>
