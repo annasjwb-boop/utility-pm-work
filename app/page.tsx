@@ -2,8 +2,10 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { EXELON_ASSETS, getExelonAssetByTag, type ExelonAsset } from '@/lib/exelon/fleet';
 import { generateAlertsFromAssets, getAlertCounts, type GridAlert } from '@/lib/exelon/alerts';
+import { getCriticalAssets } from '@/lib/exelon/asset-bridge';
 import { 
   GRID_PROGRAMS,
   PROGRAM_TYPE_CONFIG,
@@ -36,6 +38,8 @@ import {
   Shield,
   Calendar,
   Map as MapIcon,
+  Brain,
+  Activity,
 } from 'lucide-react';
 
 interface GridStats {
@@ -81,8 +85,12 @@ export default function Dashboard() {
   
   const router = useRouter();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [leftPanel, setLeftPanel] = useState<'assets' | 'programs'>('assets');
+  const [leftPanel, setLeftPanel] = useState<'critical' | 'assets' | 'programs'>('critical');
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+
+  const criticalFleetAssets = useMemo(() =>
+    getCriticalAssets().filter(a => a.health < 40).sort((a, b) => a.health - b.health),
+  []);
   const [rightPanel, setRightPanel] = useState<'alerts' | 'news' | 'map'>('alerts');
   const [selectedAssetTag, setSelectedAssetTag] = useState<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<GridProgram | null>(null);
@@ -160,31 +168,105 @@ export default function Dashboard() {
             }`}
           >
             <div className="flex-shrink-0 p-2 border-b border-white/[0.04]">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => setLeftPanel('critical')}
+                  className={`flex items-center justify-center gap-1 px-2 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                    leftPanel === 'critical'
+                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/20'
+                      : 'text-white/35 hover:text-white/55 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Critical
+                  <span className={`text-[9px] px-1 py-px rounded font-bold ${leftPanel === 'critical' ? 'bg-rose-500/20 text-rose-300' : 'bg-white/[0.06] text-white/30'}`}>{criticalFleetAssets.length}</span>
+                </button>
                 <button
                   onClick={() => setLeftPanel('assets')}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[13px] font-medium transition-all ${
                     leftPanel === 'assets'
                       ? 'bg-white/[0.08] text-white/90'
                       : 'text-white/35 hover:text-white/55 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <Zap className="h-4 w-4" />
+                  <Zap className="h-3.5 w-3.5" />
                   Assets
                 </button>
                 <button
                   onClick={() => setLeftPanel('programs')}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[13px] font-medium transition-all ${
                     leftPanel === 'programs'
                       ? 'bg-white/[0.08] text-white/90'
                       : 'text-white/35 hover:text-white/55 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <Shield className="h-4 w-4" />
+                  <Shield className="h-3.5 w-3.5" />
                   Programs
                 </button>
               </div>
             </div>
+
+            {leftPanel === 'critical' && (
+              <>
+                <div className="p-3 border-b border-white/[0.06]">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                    <h3 className="text-xs font-semibold text-rose-400/80 uppercase tracking-wider">Critical Assets</h3>
+                  </div>
+                  <p className="text-[10px] text-white/30">Health Index &lt; 40% · Immediate attention required</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {criticalFleetAssets.map(a => (
+                    <div key={a.tag} className="px-3 py-2.5 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            a.health < 25 ? 'bg-rose-500 animate-pulse' : a.health < 30 ? 'bg-rose-400' : 'bg-amber-400'
+                          }`} />
+                          <span className="text-[11px] font-medium text-white/80 truncate">{a.name}</span>
+                        </div>
+                        <span className={`text-[11px] font-bold font-mono flex-shrink-0 ml-1 ${
+                          a.health < 25 ? 'text-rose-400' : a.health < 30 ? 'text-rose-400/80' : 'text-amber-400'
+                        }`}>{a.health}%</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[9px] text-white/30 ml-4 mb-2">
+                        <span className="font-mono">{a.tag}</span>
+                        <span>·</span>
+                        <span>{a.opco}</span>
+                        <span>·</span>
+                        <span>{a.age}yr</span>
+                        <span>·</span>
+                        <span>{a.kv}kV</span>
+                        <span>·</span>
+                        <span className={a.riskTrend === 'critical' ? 'text-rose-400' : 'text-amber-400'}>{a.ttf}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[9px] text-white/35 ml-4 mb-2">
+                        <span>{a.failureMode}</span>
+                        <span>·</span>
+                        <span>{a.repairWindow}</span>
+                        <span>·</span>
+                        <span>{a.customers.toLocaleString()} customers</span>
+                      </div>
+                      <div className="flex gap-1.5 ml-4">
+                        <Link href={`/grid-iq/asset?tag=${a.tag}`}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded text-[9px] font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 transition-colors">
+                          <Brain className="w-2.5 h-2.5" /> Grid IQ
+                        </Link>
+                        <Link href={`/transformer-iot?asset=${a.tag}`}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded text-[9px] font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 transition-colors">
+                          <Activity className="w-2.5 h-2.5" /> IoT View
+                        </Link>
+                        <Link href={`/risk-intelligence`}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors">
+                          <MapPin className="w-2.5 h-2.5" /> Map
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             {leftPanel === 'assets' && (
               <>

@@ -1,8 +1,8 @@
 // @ts-nocheck — Grid IQ: Unified Analysis Tree → Scenarios → Decision → Dispatch
 'use client';
 
-import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 import {
@@ -26,10 +26,14 @@ import {
   BadgeCheck,
   RefreshCw,
   Calendar,
+  Search,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { DEMO_SCENARIOS, type DemoScenario, type DecisionSupport } from '@/lib/demo-scenarios';
 import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
+import { getCriticalAssets, type SubstationAsset } from '@/lib/exelon/asset-bridge';
 
 // ════════════════════════════════════════════════════════════════════════
 // TYPES & CONFIG
@@ -937,6 +941,22 @@ function InlineDispatch({ scenario, onReset }: { scenario: DemoScenario; onReset
 // ════════════════════════════════════════════════════════════════════════
 
 function GridIQContent() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const criticalAssets = useMemo(() => getCriticalAssets(), []);
+  const router = useRouter();
+
+  const filteredAssets = useMemo(() => {
+    if (!searchQuery.trim()) return criticalAssets.slice(0, 12);
+    const q = searchQuery.toLowerCase();
+    return criticalAssets.filter(a =>
+      a.name.toLowerCase().includes(q) ||
+      a.tag.toLowerCase().includes(q) ||
+      a.opco.toLowerCase().includes(q) ||
+      a.failureMode.toLowerCase().includes(q)
+    ).slice(0, 12);
+  }, [criticalAssets, searchQuery]);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur-md">
@@ -953,7 +973,88 @@ function GridIQContent() {
               <p className="text-xs text-white/40">Triggers → Agents → Findings → Deep Analysis → Root Cause → Scenario → Decision → Dispatch</p>
             </div>
           </div>
-          <ThemeToggle />
+
+          {/* Search + Theme */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className={`flex items-center gap-2 rounded-lg border transition-all ${
+                searchOpen ? 'w-72 bg-white/[0.04] border-violet-500/30' : 'w-44 bg-white/[0.02] border-white/8 hover:border-white/15'
+              }`}>
+                <Search className="w-3.5 h-3.5 text-white/30 ml-3 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search assets…"
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                  onFocus={() => setSearchOpen(true)}
+                  className="bg-transparent text-sm text-white/80 placeholder:text-white/25 py-2 pr-3 w-full outline-none"
+                />
+                {searchQuery && (
+                  <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="pr-3 text-white/30 hover:text-white/60">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Search results dropdown */}
+              {searchOpen && searchQuery.trim() && (
+                <div className="absolute right-0 top-full mt-1 w-96 max-h-[420px] overflow-y-auto bg-[#0d0d0d] border border-white/10 rounded-lg shadow-2xl z-50">
+                  <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/30">{filteredAssets.length} results</span>
+                    <button onClick={() => setSearchOpen(false)} className="text-[10px] text-white/30 hover:text-white/50">Close</button>
+                  </div>
+                  {filteredAssets.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-white/30">No matching assets</div>
+                  ) : (
+                    filteredAssets.map(a => (
+                      <div key={a.tag} className="px-3 py-2.5 border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${a.health < 30 ? 'bg-rose-400' : a.health < 40 ? 'bg-amber-400' : 'bg-yellow-400'}`} />
+                            <span className="text-[11px] font-medium text-white/80 truncate">{a.name}</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-white/30 flex-shrink-0 ml-2">{a.tag}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[9px] text-white/40 ml-4 mb-1.5">
+                          <span>{a.opco}</span>
+                          <span>·</span>
+                          <span>HI {a.health}%</span>
+                          <span>·</span>
+                          <span>{a.failureMode}</span>
+                          <span>·</span>
+                          <span className={a.riskTrend === 'critical' ? 'text-rose-400' : 'text-amber-400'}>{a.ttf}</span>
+                        </div>
+                        <div className="flex gap-1.5 ml-4">
+                          <Link href={`/grid-iq/asset?tag=${a.tag}`} onClick={() => setSearchOpen(false)}
+                            className="flex items-center gap-1 px-2 py-1 rounded text-[9px] font-medium text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/15 transition-colors">
+                            <Brain className="w-2.5 h-2.5" /> Grid IQ
+                          </Link>
+                          <Link href={`/transformer-iot?asset=${a.tag}`} onClick={() => setSearchOpen(false)}
+                            className="flex items-center gap-1 px-2 py-1 rounded text-[9px] font-medium text-sky-400 bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/15 transition-colors">
+                            <Activity className="w-2.5 h-2.5" /> IoT View
+                          </Link>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Click-away overlay */}
+              {searchOpen && <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />}
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Critical banner */}
+        <div className="max-w-7xl mx-auto px-6 pb-2 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20">
+            <AlertTriangle className="w-3 h-3 text-rose-400" />
+            <span className="text-[10px] font-semibold text-rose-400">3 Most Critical</span>
+          </div>
+          <span className="text-[10px] text-white/30">Showing the three highest-priority assets requiring immediate attention</span>
+          <span className="text-[10px] text-white/20 ml-auto">{criticalAssets.length} total critical assets (HI &lt; 50%)</span>
         </div>
       </header>
 
