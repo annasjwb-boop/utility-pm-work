@@ -449,3 +449,120 @@ export function synthesizeDiagnostic(a: SubstationAsset): AssetDiagnostic {
     scenarioCategory: a.riskTrend === 'critical' ? 'dga_alert' : a.age > 35 ? 'aging_asset' : 'avoided_outage',
   };
 }
+
+// ══════════════════════════════════════════════════════════════════
+// SCENARIO SYNTHESIS — full DemoScenario from asset diagnostic
+// ══════════════════════════════════════════════════════════════════
+
+import type { DemoScenario, DecisionSupport, DecisionOption, ScenarioEvent, ScenarioOutcome, ScenarioMetric } from '@/lib/demo-scenarios';
+
+export function synthesizeScenario(a: SubstationAsset, diag: AssetDiagnostic): DemoScenario {
+  const rng = seededRng(tagToSeed(a.tag) + 8888);
+  const category: DemoScenario['category'] = diag.scenarioCategory as DemoScenario['category'];
+  const severity: DemoScenario['severity'] = a.health < 30 ? 'critical' : a.health < 40 ? 'high' : 'medium';
+
+  // Cost modeling
+  const hourlyImpact = a.customers * 0.008; // $/customer-hr
+  const outageHours = a.health < 30 ? 36 + Math.floor(rng() * 48) : a.health < 40 ? 12 + Math.floor(rng() * 24) : 4 + Math.floor(rng() * 12);
+  const costAvoided = hourlyImpact * outageHours;
+  const costStr = costAvoided >= 1000000 ? `$${(costAvoided / 1000000).toFixed(1)}M` : `$${Math.round(costAvoided / 1000)}K`;
+  const replacementCost = Math.floor(800000 + rng() * 3200000);
+  const replacementStr = `$${(replacementCost / 1000000).toFixed(1)}M`;
+  const deferRisk = Math.floor(replacementCost * (1.5 + rng()));
+  const deferStr = `$${(deferRisk / 1000000).toFixed(1)}M`;
+
+  const now = new Date();
+  const timeline: ScenarioEvent[] = [
+    { id: `${a.tag}-e1`, timestamp: new Date(now.getTime() - 180 * 86400000).toISOString(), type: 'detection', title: 'Anomaly Detected', description: `AI monitoring flagged ${a.failureMode.toLowerCase()} trending on ${a.name}. Health index declining at accelerated rate.`, icon: 'TrendingDown' },
+    { id: `${a.tag}-e2`, timestamp: new Date(now.getTime() - 120 * 86400000).toISOString(), type: 'analysis', title: 'Multi-Agent Analysis', description: `${diag.agentIds.length} diagnostic agents converged on ${diag.crossVal.label.toLowerCase()} with ${diag.crossVal.confidence}% confidence.`, icon: 'Brain' },
+    { id: `${a.tag}-e3`, timestamp: new Date(now.getTime() - 60 * 86400000).toISOString(), type: 'recommendation', title: 'Recommendation Issued', description: `Grid IQ recommends ${a.repairWindow.toLowerCase()} action: ${a.failureMode.toLowerCase()} repair. Est. duration: ${a.repairDuration}.`, icon: 'Shield' },
+    { id: `${a.tag}-e4`, timestamp: new Date(now.getTime() - 14 * 86400000).toISOString(), type: 'action', title: 'Decision Point', description: `Operator review required. ${a.customers.toLocaleString()} customers at risk. TTF: ${a.ttf}.`, icon: 'AlertTriangle' },
+  ];
+
+  const outcome: ScenarioOutcome = {
+    title: `${a.failureMode} Prevented`,
+    description: `Proactive intervention on ${a.name} averts unplanned outage affecting ${a.customers.toLocaleString()} customers.`,
+    costAvoided: costStr,
+    customersProtected: a.customers,
+    outageHoursAvoided: outageHours,
+  };
+
+  const metrics: ScenarioMetric[] = [
+    { label: 'Health Index', value: `${a.health}%`, trend: 'down', context: `Declining ${a.health < 30 ? 'rapidly' : 'steadily'}` },
+    { label: 'Load Factor', value: `${a.load}%`, trend: a.load > 80 ? 'up' : 'stable', context: `${a.load > 80 ? 'Above' : 'Within'} design limits` },
+    { label: 'TTF', value: a.ttf, trend: 'down', context: 'Predicted time to failure' },
+    { label: 'Age', value: `${a.age} yr`, trend: 'up', context: `Design life: ${Math.floor(35 + rng() * 15)} yr` },
+  ];
+
+  const urgency: DecisionSupport['urgency'] = a.repairWindow === 'Immediate' ? 'immediate' : a.repairWindow === 'Within 30 days' ? 'within_week' : 'within_month';
+
+  const approveOption: DecisionOption = {
+    label: 'Approve Proactive Repair',
+    description: `Execute planned ${a.failureMode.toLowerCase()} repair during ${a.repairWindow === 'Immediate' ? 'emergency window' : 'next scheduled outage'}. Crew and materials pre-staged.`,
+    pros: [
+      `Prevents unplanned outage (${outageHours}h estimated)`,
+      `Protects ${a.customers.toLocaleString()} customers`,
+      `Controlled execution with pre-staged resources`,
+      `Extends asset life by ${Math.floor(5 + rng() * 15)} years`,
+    ],
+    cons: [
+      `Planned outage required (${a.repairDuration})`,
+      `Capital cost: ${replacementStr}`,
+      `Crew reallocation from other work`,
+    ],
+    financialImpact: { label: 'Net Savings', value: costStr, trend: 'positive' },
+    riskLevel: 'low',
+    customerImpact: `Brief planned outage (${a.repairDuration}) with advance notification. Zero unplanned exposure.`,
+    timeline: `${a.repairDuration} repair + 48h commissioning`,
+  };
+
+  const deferOption: DecisionOption = {
+    label: 'Defer to Watch List',
+    description: `Continue monitoring with enhanced surveillance. Re-evaluate at next inspection cycle. Accept risk of unplanned failure.`,
+    pros: [
+      'No immediate capital expenditure',
+      'No planned outage disruption',
+      'More time for budget approval',
+    ],
+    cons: [
+      `${Math.floor(rng() * 30 + 40)}% probability of unplanned failure within ${a.ttf}`,
+      `Potential ${outageHours}h unplanned outage for ${a.customers.toLocaleString()} customers`,
+      `Emergency repair cost up to ${deferStr}`,
+      `Possible cascading failures to adjacent equipment`,
+    ],
+    financialImpact: { label: 'Risk Exposure', value: deferStr, trend: 'negative' },
+    riskLevel: severity === 'critical' ? 'critical' : 'high',
+    customerImpact: `${a.customers.toLocaleString()} customers exposed to unplanned outage risk. Restoration time: ${outageHours}h.`,
+    timeline: `Re-evaluate in ${a.repairWindow === 'Immediate' ? '7 days' : '30 days'}`,
+  };
+
+  const decisionSupport: DecisionSupport = {
+    summary: `Grid IQ has identified ${a.failureMode.toLowerCase()} on ${a.name} (${a.tag}) with ${diag.crossVal.confidence}% confidence. The asset serves ${a.customers.toLocaleString()} customers and has a predicted time-to-failure of ${a.ttf}. Recommended action: ${a.repairWindow.toLowerCase()} repair.`,
+    urgency,
+    confidenceScore: diag.crossVal.confidence,
+    approveOption,
+    deferOption,
+    keyRisks: [
+      `Health index at ${a.health}% — ${a.health < 30 ? 'end of life' : 'very poor condition'}`,
+      `Primary failure mode: ${a.failureMode}`,
+      `${a.customers.toLocaleString()} customers at risk of ${outageHours}h outage`,
+      `Asset age (${a.age} yr) exceeds fleet average`,
+    ],
+  };
+
+  return {
+    id: `synth-${a.tag}`,
+    title: diag.scenarioTitle,
+    subtitle: `${diag.crossVal.label} — proactive intervention recommended`,
+    description: `${a.name} (${a.tag}) at ${a.opco} shows ${a.failureMode.toLowerCase()} with health index ${a.health}%. Multi-agent diagnostic converged at ${diag.crossVal.confidence}% confidence. Predicted time to failure: ${a.ttf}. Grid IQ recommends ${a.repairWindow.toLowerCase()} action to protect ${a.customers.toLocaleString()} customers.`,
+    assetTag: a.tag,
+    assetName: a.name,
+    opCo: a.opco,
+    category,
+    severity,
+    timeline,
+    outcome,
+    metrics,
+    decisionSupport,
+  };
+}

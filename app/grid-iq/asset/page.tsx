@@ -1,19 +1,21 @@
 // @ts-nocheck — Per-asset Grid IQ diagnostic view
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Activity, Zap, Shield, Thermometer, Eye,
   FlaskConical, FileText, ClipboardList, Building, ChevronRight,
-  AlertTriangle, TrendingDown, Clock, Brain,
+  AlertTriangle, TrendingDown, Clock, Brain, CheckCircle,
+  Users, Wrench, Calendar, BadgeCheck, RefreshCw, Sparkles,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme-context';
 import { ThemeToggle } from '@/app/components/ThemeToggle';
-import { getSubstationAsset, synthesizeDiagnostic, type AssetDiagnostic } from '@/lib/exelon/asset-bridge';
+import { getSubstationAsset, synthesizeDiagnostic, synthesizeScenario, type AssetDiagnostic } from '@/lib/exelon/asset-bridge';
 import { OPCOS } from '@/lib/exelon/risk-intelligence-data';
 import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
+import type { DemoScenario, DecisionSupport, DecisionOption } from '@/lib/demo-scenarios';
 
 // ── Icon map (string → component) ──
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -75,8 +77,8 @@ function PulseDot({ pathId, dur = 3, delay = 0, color = 'rgba(255,255,255,0.4)' 
 }
 
 // ── Layout ──
-const ROW = { trigger: 60, agent: 195, finding: 330, deep: 475, rootCause: 625 };
-const TREE_H = 720;
+const ROW = { trigger: 60, agent: 195, finding: 330, deep: 475, rootCause: 625, scenario: 780 };
+const TREE_H = 870;
 const STAGGER = [-25, 0, 25];
 const CX = 50; // center X percent
 
@@ -95,16 +97,23 @@ function AssetGridIQ() {
   const { isDark } = useTheme();
 
   const [diag, setDiag] = useState<AssetDiagnostic | null>(null);
+  const [scenario, setScenario] = useState<DemoScenario | null>(null);
   const [reveal, setReveal] = useState(0);
+  const [decision, setDecision] = useState<'pending' | 'approved' | 'deferred'>('pending');
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (!tag) return;
     const asset = getSubstationAsset(tag);
     if (asset) {
-      setDiag(synthesizeDiagnostic(asset));
+      const d = synthesizeDiagnostic(asset);
+      setDiag(d);
+      setScenario(synthesizeScenario(asset, d));
       setReveal(0);
-      // Animate reveal
-      const timers = [1, 2, 3, 4, 5].map((step, i) =>
+      setDecision('pending');
+      setExpanded(false);
+      // Animate reveal: 5 tree rows + scenario card
+      const timers = [1, 2, 3, 4, 5, 6].map((step, i) =>
         setTimeout(() => setReveal(step), 400 + i * 500)
       );
       return () => timers.forEach(clearTimeout);
@@ -354,37 +363,330 @@ function AssetGridIQ() {
                 <span className="text-[9px] text-white/55 text-center leading-snug">{diag.crossVal.detail}</span>
               </div>
             </div>
+
+            {/* SVG connector: root cause → scenario */}
+            <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: TREE_H, zIndex: -1 }} viewBox="0 0 900 870" preserveAspectRatio="none">
+              <AnimatedPath
+                d={`M ${CX * 9},${ROW.rootCause + 30} L ${CX * 9},${ROW.scenario - 25}`}
+                visible={reveal >= 6} color={svgC.lineStrong} width={2.5} />
+            </svg>
+
+            {/* SCENARIO CARD */}
+            {scenario && (
+              <div className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
+                style={{ left: `${CX}%`, top: ROW.scenario - 25 }}>
+                <button
+                  onClick={() => { setExpanded(!expanded); setDecision('pending'); }}
+                  className={`giq-node flex flex-col items-center gap-1 px-4 py-3 rounded-lg border-2 transition-all cursor-pointer max-w-[220px] ${
+                    expanded
+                      ? `${catConfig.border} ${catConfig.bg} ring-1 ring-white/10 shadow-lg shadow-white/5`
+                      : 'border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/15'
+                  }`}>
+                  <span className={`text-[9px] uppercase tracking-wider font-bold ${catConfig.color}`}>{catConfig.label}</span>
+                  <span className="text-[11px] font-bold text-white/90 text-center leading-tight">{scenario.title}</span>
+                  <div className="flex items-center gap-1.5 text-[9px] text-white/50">
+                    <span>{scenario.outcome.customersProtected.toLocaleString()} cust.</span>
+                    <span>·</span>
+                    <span>{scenario.outcome.costAvoided} at risk</span>
+                  </div>
+                  <span className={`text-[9px] font-medium ${expanded ? 'text-amber-400' : 'text-white/35'}`}>
+                    {expanded ? '▼ Expanded' : '▶ Investigate'}
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Action cards */}
-          {reveal >= 5 && (
-            <div className="mt-4 grid grid-cols-3 gap-3 transition-all duration-500">
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-amber-400 mb-2">Recommended Action</div>
-                <p className="text-[11px] text-white/70 leading-relaxed">{a.repairWindow} — {a.failureMode.toLowerCase()} repair. Estimated duration: {a.repairDuration}.</p>
+          {/* ═══ SCENARIO EXPANSION (below tree) ═══ */}
+          {expanded && scenario && (
+            <div className="max-w-3xl mx-auto pb-12 animate-in fade-in slide-in-from-top-2 duration-300">
+              {/* Connector line from tree */}
+              <div className="flex justify-center py-2">
+                <div className="w-px h-6 bg-white/10" />
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-sky-400 mb-2">Required Resources</div>
-                <div className="flex flex-wrap gap-1">
-                  {[...a.materials, ...a.skills].map((item, i) => (
-                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-white/50 border border-white/5">{item}</span>
-                  ))}
+
+              {/* Scenario brief card */}
+              <div className={`rounded-xl border ${catConfig.border} bg-white/[0.02] p-5 mb-4`}>
+                <div className="flex items-start gap-3">
+                  <Brain className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-bold text-white">{scenario.title}</h3>
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${catConfig.bg} ${catConfig.color}`}>{scenario.severity}</span>
+                    </div>
+                    <p className="text-xs text-white/50 leading-relaxed">{scenario.description}</p>
+                  </div>
+                </div>
+
+                {/* Impact metrics strip */}
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  <div className="rounded-lg bg-emerald-500/[0.04] border border-emerald-500/10 p-2.5 text-center">
+                    <div className="text-[9px] text-white/35">Cost Avoided</div>
+                    <div className="text-sm font-bold text-emerald-400">{scenario.outcome.costAvoided}</div>
+                  </div>
+                  <div className="rounded-lg bg-blue-500/[0.04] border border-blue-500/10 p-2.5 text-center">
+                    <div className="text-[9px] text-white/35">Customers</div>
+                    <div className="text-sm font-bold text-blue-400">{scenario.outcome.customersProtected.toLocaleString()}</div>
+                  </div>
+                  <div className="rounded-lg bg-amber-500/[0.04] border border-amber-500/10 p-2.5 text-center">
+                    <div className="text-[9px] text-white/35">Hours Saved</div>
+                    <div className="text-sm font-bold text-amber-400">{scenario.outcome.outageHoursAvoided}h</div>
+                  </div>
                 </div>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-2">Impact</div>
-                <p className="text-[11px] text-white/70 leading-relaxed">
-                  {a.customers.toLocaleString()} customers protected · {a.kv} kV · {a.ttf} to predicted failure
-                </p>
-                <Link href={`/transformer-iot?asset=${a.tag}`}
-                  className="inline-flex items-center gap-1 mt-2 text-[10px] text-violet-400 hover:text-violet-300 transition-colors">
-                  Open IoT Dashboard <ChevronRight className="w-3 h-3" />
-                </Link>
-              </div>
+
+              {/* Decision (pending) */}
+              {decision === 'pending' && (
+                <>
+                  <div className="flex justify-center py-1"><div className="w-px h-4 bg-white/10" /></div>
+                  <AssetDecisionPanel
+                    decisionSupport={scenario.decisionSupport}
+                    onApprove={() => setDecision('approved')}
+                    onDefer={() => setDecision('deferred')}
+                  />
+                </>
+              )}
+
+              {/* Dispatch (approved) */}
+              {decision === 'approved' && (
+                <>
+                  <div className="flex justify-center py-1"><div className="w-px h-4 bg-emerald-500/20" /></div>
+                  <AssetInlineDispatch scenario={scenario} onReset={() => { setExpanded(false); setDecision('pending'); }} />
+                </>
+              )}
+
+              {/* Deferred */}
+              {decision === 'deferred' && (
+                <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.03] p-5 text-center mt-4">
+                  <Clock className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+                  <h4 className="text-sm font-semibold text-amber-400 mb-1">Deferred to Watch List</h4>
+                  <p className="text-xs text-white/40 mb-3">Asset will be re-evaluated at next monitoring cycle. TTF: {a.ttf}.</p>
+                  <button onClick={() => { setExpanded(false); setDecision('pending'); }} className="text-xs text-white/40 hover:text-white/60 transition-colors">← Back to analysis</button>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// DECISION PANEL
+// ════════════════════════════════════════════════════════════════
+
+function AssetDecisionPanel({ decisionSupport, onApprove, onDefer }: {
+  decisionSupport: DecisionSupport;
+  onApprove: () => void;
+  onDefer: () => void;
+}) {
+  const [selectedTab, setSelectedTab] = useState<'approve' | 'defer'>('approve');
+  const option = selectedTab === 'approve' ? decisionSupport.approveOption : decisionSupport.deferOption;
+
+  const urgencyLabels: Record<string, { text: string; color: string }> = {
+    immediate: { text: 'Immediate', color: 'text-rose-400/70 bg-rose-500/10 border-rose-500/15' },
+    within_24h: { text: 'Within 24 hours', color: 'text-amber-400/70 bg-amber-500/10 border-amber-500/15' },
+    within_week: { text: 'Within 1 week', color: 'text-yellow-400/60 bg-yellow-500/10 border-yellow-500/15' },
+    within_month: { text: 'Within 1 month', color: 'text-cyan-400/60 bg-cyan-500/10 border-cyan-500/15' },
+  };
+
+  const riskColors: Record<string, string> = {
+    low: 'text-emerald-400/60 bg-emerald-500/10',
+    medium: 'text-amber-400/60 bg-amber-500/10',
+    high: 'text-orange-400/60 bg-orange-500/10',
+    critical: 'text-rose-400/60 bg-rose-500/10',
+  };
+
+  const urg = urgencyLabels[decisionSupport.urgency] || urgencyLabels.within_week;
+
+  return (
+    <div className="rounded-xl bg-white/[0.03] border border-amber-500/15 overflow-hidden animate-in fade-in duration-500">
+      <div className="px-4 pt-4 pb-3 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-amber-400/50" />
+            <span className="text-sm font-semibold text-amber-400/60">Operator Decision Required</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${urg.color}`}>{urg.text}</span>
+            <span className="text-[10px] text-white/30 flex items-center gap-1">
+              <Brain className="w-3 h-3" /> {decisionSupport.confidenceScore}%
+            </span>
+          </div>
+        </div>
+        <p className="text-xs text-white/50 leading-relaxed">{decisionSupport.summary}</p>
+      </div>
+
+      <div className="px-4 py-2.5 bg-rose-500/[0.03] border-b border-white/[0.06]">
+        <div className="text-[10px] font-semibold text-rose-400/50 uppercase tracking-wider mb-1">Key Risks</div>
+        <div className="space-y-1">
+          {decisionSupport.keyRisks.map((risk, i) => (
+            <div key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
+              <AlertTriangle className="w-3 h-3 text-rose-400/40 flex-shrink-0 mt-0.5" />
+              {risk}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex border-b border-white/[0.06]">
+        <button onClick={() => setSelectedTab('approve')} className={`flex-1 px-3 py-2 text-xs font-medium transition-all ${
+          selectedTab === 'approve' ? 'text-emerald-400/70 border-b-2 border-emerald-400/50 bg-emerald-500/[0.04]' : 'text-white/35 hover:text-white/50'
+        }`}>
+          <span className="flex items-center justify-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Approve</span>
+        </button>
+        <button onClick={() => setSelectedTab('defer')} className={`flex-1 px-3 py-2 text-xs font-medium transition-all ${
+          selectedTab === 'defer' ? 'text-amber-400/70 border-b-2 border-amber-400/50 bg-amber-500/[0.04]' : 'text-white/35 hover:text-white/50'
+        }`}>
+          <span className="flex items-center justify-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Defer</span>
+        </button>
+      </div>
+
+      <div className="px-4 py-4 space-y-3">
+        <p className="text-xs text-white/50">{option.description}</p>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className={`p-2.5 rounded-lg text-center ${
+            option.financialImpact.trend === 'positive' ? 'bg-emerald-500/[0.06] border border-emerald-500/10' : 'bg-rose-500/[0.06] border border-rose-500/10'
+          }`}>
+            <div className="text-[10px] text-white/35">{option.financialImpact.label}</div>
+            <div className={`text-sm font-bold ${option.financialImpact.trend === 'positive' ? 'text-emerald-400/70' : 'text-rose-400/70'}`}>{option.financialImpact.value}</div>
+          </div>
+          <div className={`p-2.5 rounded-lg text-center ${riskColors[option.riskLevel]}`}>
+            <div className="text-[10px] text-white/35">Risk Level</div>
+            <div className="text-sm font-bold capitalize">{option.riskLevel}</div>
+          </div>
+          <div className="p-2.5 rounded-lg text-center bg-white/[0.03] border border-white/[0.06]">
+            <div className="text-[10px] text-white/35">Timeline</div>
+            <div className="text-[10px] font-medium text-white/60 leading-tight">{option.timeline}</div>
+          </div>
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-blue-500/[0.04] border border-blue-500/10 flex items-start gap-2">
+          <Users className="w-3.5 h-3.5 text-blue-400/50 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-[10px] text-blue-400/50 font-medium">Customer Impact</div>
+            <div className="text-xs text-white/50">{option.customerImpact}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-[10px] font-semibold text-emerald-400/50 uppercase tracking-wider mb-1.5">Value</div>
+            {option.pros.map((p, i) => (
+              <div key={i} className="flex items-start gap-1.5 text-[11px] text-white/45 mb-1">
+                <CheckCircle className="w-3 h-3 text-emerald-400/40 flex-shrink-0 mt-0.5" /> {p}
+              </div>
+            ))}
+          </div>
+          <div>
+            <div className="text-[10px] font-semibold text-rose-400/50 uppercase tracking-wider mb-1.5">Risks</div>
+            {option.cons.map((c, i) => (
+              <div key={i} className="flex items-start gap-1.5 text-[11px] text-white/45 mb-1">
+                <AlertTriangle className="w-3 h-3 text-rose-400/40 flex-shrink-0 mt-0.5" /> {c}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
+          <button onClick={onApprove} className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            <CheckCircle className="w-4 h-4" /> Approve & Execute
+          </button>
+          <button onClick={onDefer} className="flex-1 py-2.5 rounded-lg border border-white/10 text-white/60 font-medium text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
+            <Clock className="w-4 h-4" /> Defer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// INLINE DISPATCH
+// ════════════════════════════════════════════════════════════════
+
+function AssetInlineDispatch({ scenario, onReset }: { scenario: DemoScenario; onReset: () => void }) {
+  const [steps, setSteps] = useState([
+    { id: 'wo', label: 'Generate Work Order', detail: `WO-${scenario.assetTag.replace(/-/g, '').slice(-6)}-GIQ`, status: 'pending' as const, icon: ClipboardList },
+    { id: 'crew', label: 'Dispatch Crew Notification', detail: `${scenario.opCo} field operations notified`, status: 'pending' as const, icon: Users },
+    { id: 'scada', label: 'SCADA Switching Order', detail: 'Automated load transfer prepared', status: 'pending' as const, icon: Zap },
+    { id: 'parts', label: 'Parts Reserved', detail: 'Spare components from inventory', status: 'pending' as const, icon: Wrench },
+    { id: 'schedule', label: 'Schedule Updated', detail: 'Gantt chart adjusted, stakeholders notified', status: 'pending' as const, icon: Calendar },
+  ]);
+  const [allDone, setAllDone] = useState(false);
+
+  useEffect(() => {
+    steps.forEach((_, idx) => {
+      setTimeout(() => setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status: 'running' as const } : s)), idx * 800);
+      setTimeout(() => setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status: 'done' as const } : s)), idx * 800 + 600);
+    });
+    setTimeout(() => setAllDone(true), steps.length * 800 + 600);
+  }, []);
+
+  return (
+    <div className="space-y-4 animate-in fade-in duration-300">
+      <div className="flex items-center gap-2">
+        <Zap className="w-4 h-4 text-cyan-400" />
+        <span className="text-xs font-semibold text-white">Dispatch & Execution</span>
+        <span className="text-[10px] text-white/30">— {scenario.title}</span>
+      </div>
+
+      <div className="rounded-xl border border-white/8 bg-white/[0.02] overflow-hidden">
+        {steps.map((step, idx) => {
+          const StepIcon = step.icon;
+          return (
+            <div key={step.id} className={`flex items-center gap-3 px-4 py-3 ${idx < steps.length - 1 ? 'border-b border-white/5' : ''} ${
+              step.status === 'running' ? 'bg-cyan-500/[0.04]' : step.status === 'done' ? 'bg-emerald-500/[0.02]' : ''
+            } transition-all duration-500`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                step.status === 'done' ? 'bg-emerald-500/20' : step.status === 'running' ? 'bg-cyan-500/20' : 'bg-white/5'
+              }`}>
+                {step.status === 'done' ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> :
+                 step.status === 'running' ? <RefreshCw className="w-3.5 h-3.5 text-cyan-400 animate-spin" /> :
+                 <StepIcon className="w-3.5 h-3.5 text-white/30" />}
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-medium text-white">{step.label}</div>
+                <div className="text-[10px] text-white/40">{step.detail}</div>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                step.status === 'done' ? 'bg-emerald-500/15 text-emerald-400' :
+                step.status === 'running' ? 'bg-cyan-500/15 text-cyan-400' :
+                'bg-white/5 text-white/30'
+              }`}>
+                {step.status === 'done' ? '✓' : step.status === 'running' ? '⟳' : '○'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {allDone && (
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-center animate-in zoom-in-95 duration-300">
+          <BadgeCheck className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+          <h4 className="text-sm font-bold text-emerald-400 mb-1">Dispatch Complete</h4>
+          <p className="text-xs text-white/40 mb-3">All systems updated. Crews notified. SCADA orders queued.</p>
+          <div className="grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto">
+            <div>
+              <div className="text-[10px] text-white/35">Cost Avoided</div>
+              <div className="text-sm font-bold text-emerald-400">{scenario.outcome.costAvoided}</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-white/35">Customers</div>
+              <div className="text-sm font-bold text-blue-400">{scenario.outcome.customersProtected.toLocaleString()}</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-white/35">Hours Saved</div>
+              <div className="text-sm font-bold text-amber-400">{scenario.outcome.outageHoursAvoided}h</div>
+            </div>
+          </div>
+          <button onClick={onReset} className="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition-colors">
+            ← Back to Analysis
+          </button>
+        </div>
+      )}
     </div>
   );
 }
