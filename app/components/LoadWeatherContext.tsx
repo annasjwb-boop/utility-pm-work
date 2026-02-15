@@ -256,13 +256,6 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
           <div className="flex justify-between mt-1 text-[8px] text-white/20 font-mono px-0.5">
             <span>7d ago</span><span>5d</span><span>3d</span><span>Yesterday</span><span>Now</span>
           </div>
-          {/* Stats row */}
-          <div className="flex items-center gap-4 mt-2 pt-1.5 border-t border-white/[0.04] text-[10px]">
-            <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
-            <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
-            <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
-            {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
-          </div>
         </div>
 
         {/* Weather */}
@@ -286,6 +279,14 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
             <span>{weather.riskFactor}</span>
           </div>
         </div>
+      </div>
+
+      {/* ═══ Stats strip — full width ═══ */}
+      <div className="flex items-center gap-4 px-3 py-1.5 border-t border-white/[0.04] text-[10px]">
+        <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
+        <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
+        <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
+        {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
       </div>
 
       {/* ═══ Bottom row: stress metrics + exposure ═══ */}
