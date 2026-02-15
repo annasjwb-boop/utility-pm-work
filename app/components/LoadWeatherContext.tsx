@@ -240,7 +240,7 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
   const uvColors: Record<string, string> = { Minimal: 'text-emerald-400', Moderate: 'text-white/55', High: 'text-amber-400', Severe: 'text-rose-400' };
 
   return (
-    <div className="rounded-lg border border-white/8 bg-white/[0.015] mb-4 overflow-hidden">
+    <div className="rounded-lg border border-white/8 bg-white/[0.015] mb-4 overflow-hidden h-full flex flex-col">
       {/* ═══ Top row: sparkline + weather ═══ */}
       <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5">
 
@@ -282,7 +282,7 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
       </div>
 
       {/* ═══ Bottom row: stats + stress | exposure ═══ */}
-      <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5 border-t border-white/[0.04]">
+      <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5 border-t border-white/[0.04] flex-1">
 
         {/* Load Stats + Stress */}
         <div className="px-3 py-2">
