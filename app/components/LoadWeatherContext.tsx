@@ -281,19 +281,17 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
         </div>
       </div>
 
-      {/* ═══ Stats strip — full width ═══ */}
-      <div className="flex items-center gap-4 px-3 py-1.5 border-t border-white/[0.04] text-[10px]">
-        <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
-        <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
-        <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
-        {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
-      </div>
-
-      {/* ═══ Bottom row: stress metrics + exposure ═══ */}
+      {/* ═══ Bottom row: stats + stress | exposure ═══ */}
       <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5 border-t border-white/[0.04]">
 
-        {/* Load Stress */}
+        {/* Load Stats + Stress */}
         <div className="px-3 py-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 mb-2 text-[10px]">
+            <span className="text-white/30">Now: <span className="text-white/70 font-mono font-medium">{currentLoad}%</span></span>
+            <span className="text-white/30">24h Avg: <span className="text-white/70 font-mono">{avgLoad}%</span></span>
+            <span className="text-white/30">24h Peak: <span className={`font-mono font-medium ${peakLoad > 90 ? 'text-rose-400' : peakLoad > 80 ? 'text-amber-400' : 'text-white/70'}`}>{peakLoad}%</span></span>
+            {peakHours > 0 && <span className="text-rose-400/60 text-[9px]">⚠ {peakHours}h at peak</span>}
+          </div>
           <div className="flex items-center gap-1 mb-1.5">
             <Gauge className="w-3 h-3 text-violet-400/50" />
             <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">Lifetime Load Stress</span>
