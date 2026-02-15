@@ -472,6 +472,36 @@ export default function RiskIntelligencePage() {
                 <LayerBtn c={c} icon={<Sun className="w-3.5 h-3.5" />} iconBg={isDark ? 'rgba(245,158,11,0.15)' : 'rgba(109,40,217,0.1)'} iconColor={isDark ? 'rgb(251,191,36)' : 'rgb(109,40,217)'}
                   name="Transformer Assets" desc="Age, health index, load factor" active={activeLayers.has('assets')} onClick={() => toggleLayer('assets')} />
               </div>
+
+              {/* Asset type selector */}
+              {activeLayers.has('assets') && (
+                <div className="mt-2">
+                  <div className="text-[9px] font-semibold uppercase tracking-wider mb-1.5 px-1" style={{ color: c.t4 }}>Asset Type</div>
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      { id: 'transformers', label: 'Transformers', icon: <Zap className="w-2.5 h-2.5" />, count: assets.length, active: true },
+                      { id: 'breakers', label: 'Breakers', icon: <Shield className="w-2.5 h-2.5" />, count: 842, active: false },
+                      { id: 'switches', label: 'Switches', icon: <Activity className="w-2.5 h-2.5" />, count: 1204, active: false },
+                      { id: 'capacitors', label: 'Capacitors', icon: <Gauge className="w-2.5 h-2.5" />, count: 376, active: false },
+                      { id: 'regulators', label: 'Regulators', icon: <Thermometer className="w-2.5 h-2.5" />, count: 518, active: false },
+                    ].map(at => (
+                      <button key={at.id} className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all"
+                        style={{
+                          background: at.active ? c.accentBg : 'transparent',
+                          border: `1px solid ${at.active ? c.accentBorder : c.borderS}`,
+                          color: at.active ? c.accent : c.t3,
+                          fontWeight: at.active ? 600 : 400,
+                          cursor: at.active ? 'default' : 'pointer',
+                          opacity: at.active ? 1 : 0.7,
+                        }}>
+                        {at.icon}
+                        <span>{at.label}</span>
+                        <span style={{ color: at.active ? c.accent : c.t5, fontSize: '9px', fontFamily: 'monospace' }}>{at.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </Section>
 
             <Section c={c} icon={<Users className="w-3.5 h-3.5" style={{ color: c.t3 }} />} title="OpCo Risk Ranking">
