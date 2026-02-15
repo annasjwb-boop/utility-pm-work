@@ -208,10 +208,6 @@ export default function RiskIntelligencePage() {
         iconSize: [size, size], iconAnchor: [size / 2, size / 2],
       });
       const opcoObj = OPCOS.find(o => o.id === a.opco);
-      const failureImpactRaw = a.customers * 10 * (a.load / 100); // ~$10/customer-hr × load factor
-      const failureImpact = failureImpactRaw >= 1e6
-        ? `$${(failureImpactRaw / 1e6).toFixed(1)}M/hr`
-        : `$${Math.round(failureImpactRaw / 1e3)}K/hr`;
       const trendColor = a.riskTrend === 'critical' ? currentC.mkCrit : a.riskTrend === 'degrading' ? currentC.mkFair : currentC.mkGood;
       const trendLabel = a.riskTrend === 'critical' ? '▼ Critical' : a.riskTrend === 'degrading' ? '↘ Degrading' : '● Stable';
       const trendBg = a.riskTrend === 'critical' ? (currentC.bg === '#000' ? 'rgba(244,63,94,0.12)' : 'rgba(220,38,38,0.08)') : a.riskTrend === 'degrading' ? (currentC.bg === '#000' ? 'rgba(251,191,36,0.12)' : 'rgba(180,83,9,0.08)') : (currentC.bg === '#000' ? 'rgba(34,197,94,0.12)' : 'rgba(22,163,74,0.08)');
@@ -237,7 +233,7 @@ export default function RiskIntelligencePage() {
           <div style="${row}"><span style="${key}">Age</span><span style="${val}">${a.age} yr</span></div>
           <div style="${row}"><span style="${key}">Load Factor</span><span style="${val}">${a.load}%</span></div>
           <div style="${row}"><span style="${key}">Voltage / Customers</span><span style="${val}">${a.kv} kV · ${a.customers.toLocaleString()}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:2.5px 0"><span style="${key}">Failure Impact</span><span style="font-size:10px;color:${a.health < 50 ? currentC.mkCrit : a.load > 80 ? currentC.mkFair : currentC.popVal};font-family:monospace;font-weight:600">${failureImpact}</span></div>
+
 
           <div style="${sectionHead}">Predictive Maintenance</div>
           <div style="${row}"><span style="${key}">Time to Failure</span><span style="font-size:10px;color:${a.riskTrend === 'critical' ? currentC.mkCrit : a.riskTrend === 'degrading' ? currentC.mkFair : currentC.popVal};font-family:monospace;font-weight:600">${a.ttf}</span></div>
