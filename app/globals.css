@@ -590,36 +590,39 @@ body {
 [data-theme="light"] .bg-white\/50 { background-color: rgba(0,0,0,0.08) !important; }
 
 /* Black-alpha backgrounds → lighter variants */
-[data-theme="light"] .bg-black\/50 { background-color: rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .bg-black\/60 { background-color: rgba(0,0,0,0.1) !important; }
-[data-theme="light"] .bg-black\/40 { background-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .bg-black\/50 { background-color: rgba(255,255,255,0.5) !important; }
+[data-theme="light"] .bg-black\/60 { background-color: rgba(255,255,255,0.6) !important; }
+[data-theme="light"] .bg-black\/40 { background-color: rgba(255,255,255,0.4) !important; }
+[data-theme="light"] .bg-black\/90 { background-color: rgba(255,255,255,0.92) !important; }
+[data-theme="light"] .bg-black\/95 { background-color: rgba(255,255,255,0.97) !important; }
 
 /* --- Text Color Overrides --- */
 [data-theme="light"] .text-white {
   color: #111827 !important;
 }
-[data-theme="light"] .text-white\/90 { color: rgba(0,0,0,0.88) !important; }
-[data-theme="light"] .text-white\/80 { color: rgba(0,0,0,0.75) !important; }
-[data-theme="light"] .text-white\/70 { color: rgba(0,0,0,0.65) !important; }
-[data-theme="light"] .text-white\/60 { color: rgba(0,0,0,0.55) !important; }
-[data-theme="light"] .text-white\/50 { color: rgba(0,0,0,0.45) !important; }
-[data-theme="light"] .text-white\/45 { color: rgba(0,0,0,0.42) !important; }
-[data-theme="light"] .text-white\/40 { color: rgba(0,0,0,0.4) !important; }
-[data-theme="light"] .text-white\/30 { color: rgba(0,0,0,0.3) !important; }
-[data-theme="light"] .text-white\/25 { color: rgba(0,0,0,0.25) !important; }
-[data-theme="light"] .text-white\/20 { color: rgba(0,0,0,0.2) !important; }
-[data-theme="light"] .text-white\/15 { color: rgba(0,0,0,0.15) !important; }
-[data-theme="light"] .text-white\/\[0\.12\] { color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .text-white\/90 { color: #1f2937 !important; }
+[data-theme="light"] .text-white\/80 { color: #1f2937 !important; }
+[data-theme="light"] .text-white\/70 { color: #374151 !important; }
+[data-theme="light"] .text-white\/60 { color: #4b5563 !important; }
+[data-theme="light"] .text-white\/50 { color: #4b5563 !important; }
+[data-theme="light"] .text-white\/45 { color: #6b7280 !important; }
+[data-theme="light"] .text-white\/40 { color: #6b7280 !important; }
+[data-theme="light"] .text-white\/30 { color: #9ca3af !important; }
+[data-theme="light"] .text-white\/25 { color: #9ca3af !important; }
+[data-theme="light"] .text-white\/20 { color: #9ca3af !important; }
+[data-theme="light"] .text-white\/15 { color: #d1d5db !important; }
+[data-theme="light"] .text-white\/\[0\.12\] { color: #d1d5db !important; }
 
 /* --- Border Overrides --- */
-[data-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .border-white\/15 { border-color: rgba(0,0,0,0.1) !important; }
-[data-theme="light"] .border-white\/20 { border-color: rgba(0,0,0,0.1) !important; }
-[data-theme="light"] .border-white\/\[0\.04\] { border-color: rgba(0,0,0,0.04) !important; }
-[data-theme="light"] .border-white\/\[0\.06\] { border-color: rgba(0,0,0,0.06) !important; }
-[data-theme="light"] .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .border-white\/\[0\.10\] { border-color: rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .border-white\/\[0\.12\] { border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .border-white\/15 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .border-white\/20 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .border-white\/\[0\.04\] { border-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .border-white\/\[0\.06\] { border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .border-white\/\[0\.10\] { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .border-white\/\[0\.12\] { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .border-white\/5 { border-color: rgba(0,0,0,0.08) !important; }
 
 /* --- Divide Overrides --- */
 [data-theme="light"] .divide-white\/5 > * + * { border-color: rgba(0,0,0,0.04) !important; }
@@ -762,16 +765,17 @@ body {
 }
 
 /* --- Hover Overrides --- */
-[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.03) !important; }
-[data-theme="light"] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(0,0,0,0.03) !important; }
-[data-theme="light"] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(0,0,0,0.03) !important; }
-[data-theme="light"] .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(0,0,0,0.05) !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.06) !important; }
 [data-theme="light"] .hover\:text-white:hover { color: #111827 !important; }
-[data-theme="light"] .hover\:text-white\/70:hover { color: rgba(0,0,0,0.65) !important; }
-[data-theme="light"] .hover\:text-white\/80:hover { color: rgba(0,0,0,0.75) !important; }
-[data-theme="light"] .hover\:text-white\/90:hover { color: rgba(0,0,0,0.88) !important; }
-[data-theme="light"] .hover\:border-white\/15:hover { border-color: rgba(0,0,0,0.1) !important; }
-[data-theme="light"] .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .hover\:text-white\/70:hover { color: #374151 !important; }
+[data-theme="light"] .hover\:text-white\/80:hover { color: #1f2937 !important; }
+[data-theme="light"] .hover\:text-white\/90:hover { color: #111827 !important; }
+[data-theme="light"] .hover\:border-white\/15:hover { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.15) !important; }
 
 /* --- Shadow Adjustments --- */
 [data-theme="light"] .shadow-lg { box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; }

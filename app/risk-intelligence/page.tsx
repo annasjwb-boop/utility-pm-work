@@ -34,38 +34,70 @@ const T = (theme: Theme) => {
   return {
     bg: d ? '#000' : '#f8f9fb', surface: d ? '#0a0a0a' : '#ffffff', headerBg: d ? '#09090b' : '#ffffff',
     card: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-    border: d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-    borderS: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
-    t1: d ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.88)',
-    t2: d ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-    t3: d ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-    t4: d ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)',
-    t5: d ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
+    border: d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)',
+    borderS: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)',
+    t1: d ? 'rgba(255,255,255,0.9)' : '#111827',
+    t2: d ? 'rgba(255,255,255,0.7)' : '#1f2937',
+    t3: d ? 'rgba(255,255,255,0.4)' : '#4b5563',
+    t4: d ? 'rgba(255,255,255,0.25)' : '#6b7280',
+    t5: d ? 'rgba(255,255,255,0.12)' : '#9ca3af',
     popBg: d ? 'rgba(10,10,10,0.95)' : 'rgba(255,255,255,0.97)',
-    popBorder: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-    popTitle: d ? '#fff' : '#111', popSub: d ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-    popKey: d ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)',
-    popVal: d ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-    popDivider: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)',
-    legendBg: d ? 'rgba(10,10,10,0.92)' : 'rgba(255,255,255,0.95)',
+    popBorder: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
+    popTitle: d ? '#fff' : '#111827', popSub: d ? 'rgba(255,255,255,0.4)' : '#6b7280',
+    popKey: d ? 'rgba(255,255,255,0.3)' : '#6b7280',
+    popVal: d ? 'rgba(255,255,255,0.7)' : '#1f2937',
+    popDivider: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)',
+    legendBg: d ? 'rgba(10,10,10,0.92)' : 'rgba(255,255,255,0.96)',
     mapBg: d ? '#0a0a0a' : '#f0f0f0',
     accent: d ? 'rgb(34,211,238)' : 'rgb(109,40,217)',
     accentBg: d ? 'rgba(6,182,212,0.1)' : 'rgba(109,40,217,0.08)',
     accentBorder: d ? 'rgba(6,182,212,0.2)' : 'rgba(109,40,217,0.2)',
-    hover: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-    activeBtn: d ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-    activeBorder: d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-    barBg: d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-    barTrack: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)',
-    statBg: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-    statBorder: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)',
-    markerText: d ? '#fff' : '#111',
-    markerShadow: d ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)',
+    hover: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)',
+    activeBtn: d ? 'rgba(255,255,255,0.05)' : 'rgba(109,40,217,0.06)',
+    activeBorder: d ? 'rgba(255,255,255,0.06)' : 'rgba(109,40,217,0.15)',
+    barBg: d ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
+    barTrack: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)',
+    statBg: d ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
+    statBorder: d ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)',
+    markerText: d ? '#fff' : '#fff',
+    markerShadow: d ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)',
     zoomBg: d ? '#1a1a1a' : '#ffffff', zoomColor: d ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
     zoomBorder: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
     zoomHoverBg: d ? '#222' : '#f0f0f0', zoomHoverColor: d ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
-    scrollThumb: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
+    scrollThumb: d ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)',
     popShadowAlpha: d ? '0.5' : '0.12',
+    // Theme-aware marker colors: dark=green/amber/red, light=grey/purple/orange-red
+    mkGood: d ? 'rgb(52,211,153)' : 'rgb(148,163,184)',       // slate-400
+    mkGoodBg: d ? 'rgba(52,211,153,0.25)' : 'rgba(100,116,139,0.3)',
+    mkGoodBdr: d ? 'rgba(52,211,153,0.6)' : 'rgba(100,116,139,0.5)',
+    mkFair: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',        // violet-600
+    mkFairBg: d ? 'rgba(245,158,11,0.25)' : 'rgba(124,58,237,0.25)',
+    mkFairBdr: d ? 'rgba(245,158,11,0.6)' : 'rgba(124,58,237,0.5)',
+    mkCrit: d ? 'rgb(251,113,133)' : 'rgb(234,88,12)',        // orange-600
+    mkCritBg: d ? 'rgba(244,63,94,0.25)' : 'rgba(234,88,12,0.25)',
+    mkCritBdr: d ? 'rgba(244,63,94,0.6)' : 'rgba(234,88,12,0.6)',
+    // Heatmap gradient
+    heatGradient: d
+      ? { 0.15: '#1a1a2e', 0.3: '#3b0764', 0.5: '#7c2d12', 0.7: '#dc2626', 0.9: '#fbbf24' }
+      : { 0.15: '#e2e8f0', 0.3: '#cbd5e1', 0.5: '#eab308', 0.7: '#ca8a04', 0.9: '#92400e' },
+    // Legend gradient CSS
+    heatLegendGrad: d
+      ? 'linear-gradient(to right,#1a1a2e,#3b0764,#7c2d12,#dc2626,#fbbf24)'
+      : 'linear-gradient(to right,#e2e8f0,#cbd5e1,#eab308,#ca8a04,#92400e)',
+    // Legend dot colors
+    dotGood: d ? 'rgb(52,211,153)' : 'rgb(148,163,184)',
+    dotFair: d ? 'rgb(251,191,36)' : 'rgb(124,58,237)',
+    dotCrit: d ? 'rgb(251,113,133)' : 'rgb(234,88,12)',
+    // Stat value colors — purple/blue in light, cyan/amber in dark
+    stPrimary: d ? 'rgb(34,211,238)' : 'rgb(109,40,217)',     // fleet size, main metric
+    stSecondary: d ? 'rgb(251,191,36)' : 'rgb(37,99,235)',    // age, restoration
+    stGood: d ? 'rgb(52,211,153)' : 'rgb(16,185,129)',        // health good
+    stWarn: d ? 'rgb(251,191,36)' : 'rgb(217,119,6)',         // health fair
+    stDanger: d ? 'rgb(251,113,133)' : 'rgb(220,38,38)',      // poor, outages
+    stInfo: d ? 'rgb(56,189,248)' : 'rgb(59,130,246)',        // weather-driven
+    stOrange: d ? 'rgb(251,146,60)' : 'rgb(234,88,12)',       // >40yr
+    subUp: d ? 'rgba(251,113,133,0.7)' : 'rgb(220,38,38)',    // ↑ bad trend
+    subDown: d ? 'rgba(52,211,153,0.7)' : 'rgb(16,185,129)',  // ↓ good trend
   };
 };
 
@@ -94,6 +126,20 @@ const WEATHER_ICONS_REACT: Record<string, React.ReactNode> = {
   thunder: <CloudLightning className="w-4 h-4" />,
 };
 
+// ─── Chart color remapper: dark neon → light purple/blue/neutral ───
+const CHART_COLOR_MAP: Record<string, string> = {
+  'rgb(251,113,133)': 'rgb(220,38,38)',    // rose → red-600
+  'rgb(251,191,36)': 'rgb(217,119,6)',     // amber → amber-600
+  'rgb(52,211,153)': 'rgb(16,185,129)',    // emerald → emerald-500
+  'rgb(167,139,250)': 'rgb(124,58,237)',   // violet → violet-600
+  'rgb(56,189,248)': 'rgb(37,99,235)',     // sky → blue-600
+  'rgb(34,211,238)': 'rgb(79,70,229)',     // cyan → indigo-600
+  'rgb(251,146,60)': 'rgb(234,88,12)',     // orange → orange-600
+  'rgba(255,255,255,0.2)': 'rgba(0,0,0,0.15)',
+  'rgba(244,63,94,0.35)': 'rgba(220,38,38,0.25)',
+};
+const remapColor = (color: string, isDark: boolean) => isDark ? color : (CHART_COLOR_MAP[color] || color);
+
 // ════════════════════════════════════════════════════════════════
 // PAGE COMPONENT
 // ════════════════════════════════════════════════════════════════
@@ -104,6 +150,7 @@ export default function RiskIntelligencePage() {
   const mapInstanceRef = useRef<any>(null);
   const leafletRef = useRef<any>(null);
   const tileLayerRef = useRef<any>(null);
+  const heatLayerRef = useRef<any>(null);
   const layerGroupsRef = useRef<Record<string, any>>({});
   const [mapReady, setMapReady] = useState(false);
   const [activeLayers, setActiveLayers] = useState<Set<LayerId>>(new Set(['outages', 'assets']));
@@ -146,9 +193,9 @@ export default function RiskIntelligencePage() {
     const filtered = assets.filter(a => parseFloat(a.kv) >= minKv);
 
     filtered.forEach(a => {
-      const col = a.health > 75 ? 'rgb(52,211,153)' : a.health > 50 ? 'rgb(251,191,36)' : 'rgb(251,113,133)';
-      const bg = a.health > 75 ? 'rgba(52,211,153,0.25)' : a.health > 50 ? 'rgba(245,158,11,0.25)' : 'rgba(244,63,94,0.25)';
-      const bdr = a.health > 75 ? 'rgba(52,211,153,0.6)' : a.health > 50 ? 'rgba(245,158,11,0.6)' : 'rgba(244,63,94,0.6)';
+      const col = a.health > 75 ? currentC.mkGood : a.health > 50 ? currentC.mkFair : currentC.mkCrit;
+      const bg = a.health > 75 ? currentC.mkGoodBg : a.health > 50 ? currentC.mkFairBg : currentC.mkCritBg;
+      const bdr = a.health > 75 ? currentC.mkGoodBdr : a.health > 50 ? currentC.mkFairBdr : currentC.mkCritBdr;
       const kvNum = parseFloat(a.kv);
       const baseSize = kvNum >= 345 ? 20 : kvNum >= 138 ? 16 : kvNum >= 69 ? 14 : 12;
       const size = z >= 11 ? baseSize + 4 : z >= 9 ? baseSize + 2 : baseSize;
@@ -170,7 +217,7 @@ export default function RiskIntelligencePage() {
           <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Load Factor</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.load}%</span></div>
           <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Voltage Class</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.kv} kV</span></div>
           <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid ${currentC.popDivider}"><span style="font-size:10px;color:${currentC.popKey}">Customers Served</span><span style="font-size:10px;color:${currentC.popVal};font-family:monospace">${a.customers.toLocaleString()}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:10px;color:${currentC.popKey}">Failure Impact</span><span style="font-size:10px;color:${a.health < 50 ? 'rgb(251,113,133)' : a.load > 80 ? 'rgb(251,191,36)' : currentC.popVal};font-family:monospace">$${failureCost}K/hr</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:10px;color:${currentC.popKey}">Failure Impact</span><span style="font-size:10px;color:${a.health < 50 ? currentC.mkCrit : a.load > 80 ? currentC.mkFair : currentC.popVal};font-family:monospace">$${failureCost}K/hr</span></div>
         </div>
       `, { maxWidth: 260 });
       groups.assets.addLayer(m);
@@ -231,8 +278,9 @@ export default function RiskIntelligencePage() {
         const heat = (window as any).L.heatLayer(
           heatData.map((d: number[]) => [d[0], d[1], d[2]]),
           { radius: 30, blur: 22, maxZoom: 11, max: 1.0, minOpacity: 0.15,
-            gradient: { 0.15: '#1a1a2e', 0.3: '#3b0764', 0.5: '#7c2d12', 0.7: '#dc2626', 0.9: '#fbbf24' } }
+            gradient: initC.heatGradient }
         );
+        heatLayerRef.current = heat;
         groups.outages.addLayer(heat);
       }
 
@@ -272,7 +320,7 @@ export default function RiskIntelligencePage() {
     return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; } };
   }, []);
 
-  // ─── Theme change: swap tiles, re-render assets, rebind popups ───
+  // ─── Theme change: swap tiles, heatmap, re-render assets, rebind popups ───
   useEffect(() => {
     if (!mapInstanceRef.current || !tileLayerRef.current || !leafletRef.current) return;
     const Leaf = leafletRef.current;
@@ -283,9 +331,21 @@ export default function RiskIntelligencePage() {
     map.removeLayer(tileLayerRef.current);
     tileLayerRef.current = Leaf.tileLayer(TILES[theme], { maxZoom: 19 }).addTo(map);
 
+    // Rebuild heatmap with new gradient
+    if ((window as any).L?.heatLayer && heatLayerRef.current) {
+      groups.outages.removeLayer(heatLayerRef.current);
+      const heat = (window as any).L.heatLayer(
+        heatData.map((d: number[]) => [d[0], d[1], d[2]]),
+        { radius: 30, blur: 22, maxZoom: 11, max: 1.0, minOpacity: 0.15,
+          gradient: currentC.heatGradient }
+      );
+      heatLayerRef.current = heat;
+      groups.outages.addLayer(heat);
+    }
+
     rebuildAssets(Leaf, map, groups, currentC);
     rebuildWeatherPopups(groups, currentC);
-  }, [theme, rebuildAssets, rebuildWeatherPopups]);
+  }, [theme, rebuildAssets, rebuildWeatherPopups, heatData]);
 
   const toggleLayer = useCallback((id: LayerId) => {
     const map = mapInstanceRef.current;
@@ -350,30 +410,30 @@ export default function RiskIntelligencePage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* ─── Left Panel ─── */}
-        <div className="w-[340px] flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-300"
+        <div className="w-[340px] flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-300 relative z-10"
           style={{ borderRight: `1px solid ${c.border}`, background: c.surface }}>
           <div className="flex-1 overflow-y-auto scrollbar-thin">
 
             <Section c={c} icon={<AlertTriangle className="w-3.5 h-3.5" style={{ color: c.t3 }} />} title="Risk Summary" right="2014–2024">
               <div className="grid grid-cols-2 gap-2">
-                <StatCard c={c} label="Fleet Size" value={stats.totalReal.toLocaleString()} color="rgb(34,211,238)" sub={`${stats.total} shown (${stats.sampleRatio})`} />
-                <StatCard c={c} label="Avg Age" value={`${stats.avgAge}yr`} color="rgb(251,191,36)" sub={`range: 1–${Math.max(...assets.map(a => a.age))} years`} />
-                <StatCard c={c} label="Avg Health Idx" value={`${stats.avgHealth}%`} color={stats.avgHealth > 65 ? 'rgb(52,211,153)' : 'rgb(251,191,36)'} sub="fleet-wide average" />
-                <StatCard c={c} label="Poor / V. Poor" value={`${stats.pctPoor}%`} color="rgb(251,113,133)" sub={`${assets.filter(a => a.health < 40).length} units flagged`} />
-                <StatCard c={c} label="Total Outages" value="14,283" color="rgb(251,113,133)" sub="↑ 12% vs 2019–2022" subUp />
-                <StatCard c={c} label="Weather-Driven" value="68%" color="rgb(56,189,248)" sub="↑ 5pp since 2020" subUp />
-                <StatCard c={c} label="Avg Restoration" value="4.2h" color="rgb(251,191,36)" sub="↓ 28% since 2017" subDown />
-                <StatCard c={c} label=">40 Years Old" value={`${stats.pctOver40}%`} color="rgb(251,146,60)" sub="per ICC filing: 35%" />
+                <StatCard c={c} label="Fleet Size" value={stats.totalReal.toLocaleString()} color={c.stPrimary} sub={`${stats.total} shown (${stats.sampleRatio})`} />
+                <StatCard c={c} label="Avg Age" value={`${stats.avgAge}yr`} color={c.stSecondary} sub={`range: 1–${Math.max(...assets.map(a => a.age))} years`} />
+                <StatCard c={c} label="Avg Health Idx" value={`${stats.avgHealth}%`} color={stats.avgHealth > 65 ? c.stGood : c.stWarn} sub="fleet-wide average" />
+                <StatCard c={c} label="Poor / V. Poor" value={`${stats.pctPoor}%`} color={c.stDanger} sub={`${assets.filter(a => a.health < 40).length} units flagged`} />
+                <StatCard c={c} label="Total Outages" value="14,283" color={c.stDanger} sub="↑ 12% vs 2019–2022" subUp />
+                <StatCard c={c} label="Weather-Driven" value="68%" color={c.stInfo} sub="↑ 5pp since 2020" subUp />
+                <StatCard c={c} label="Avg Restoration" value="4.2h" color={c.stSecondary} sub="↓ 28% since 2017" subDown />
+                <StatCard c={c} label=">40 Years Old" value={`${stats.pctOver40}%`} color={c.stOrange} sub="per ICC filing: 35%" />
               </div>
             </Section>
 
             <Section c={c} icon={<Layers className="w-3.5 h-3.5" style={{ color: c.t3 }} />} title="Map Layers">
               <div className="flex flex-col gap-1">
-                <LayerBtn c={c} icon={<Zap className="w-3.5 h-3.5" />} iconBg="rgba(244,63,94,0.15)" iconColor="rgb(251,113,133)"
+                <LayerBtn c={c} icon={<Zap className="w-3.5 h-3.5" />} iconBg={isDark ? 'rgba(244,63,94,0.15)' : 'rgba(220,38,38,0.1)'} iconColor={remapColor('rgb(251,113,133)', isDark)}
                   name="Historical Outages" desc="EAGLE-I county-level 15-min intervals" active={activeLayers.has('outages')} onClick={() => toggleLayer('outages')} />
-                <LayerBtn c={c} icon={<Cloud className="w-3.5 h-3.5" />} iconBg="rgba(14,165,233,0.12)" iconColor="rgb(56,189,248)"
+                <LayerBtn c={c} icon={<Cloud className="w-3.5 h-3.5" />} iconBg={isDark ? 'rgba(14,165,233,0.12)' : 'rgba(37,99,235,0.1)'} iconColor={remapColor('rgb(56,189,248)', isDark)}
                   name="Weather Events" desc="NOAA storms, derechos, ice storms" active={activeLayers.has('weather')} onClick={() => toggleLayer('weather')} />
-                <LayerBtn c={c} icon={<Sun className="w-3.5 h-3.5" />} iconBg="rgba(245,158,11,0.15)" iconColor="rgb(251,191,36)"
+                <LayerBtn c={c} icon={<Sun className="w-3.5 h-3.5" />} iconBg={isDark ? 'rgba(245,158,11,0.15)' : 'rgba(109,40,217,0.1)'} iconColor={isDark ? 'rgb(251,191,36)' : 'rgb(109,40,217)'}
                   name="Transformer Assets" desc="Age, health index, load factor" active={activeLayers.has('assets')} onClick={() => toggleLayer('assets')} />
               </div>
             </Section>
@@ -402,16 +462,16 @@ export default function RiskIntelligencePage() {
                 {WEATHER_EVENTS.slice(0, 8).map(ev => (
                   <button key={ev.id} onClick={() => flyTo(ev.lat, ev.lng, 10)}
                     className="flex gap-2 px-2 py-1.5 rounded-md transition-colors w-full text-left"
-                    style={{ borderLeft: `2px solid ${ev.type === 'severe' ? 'rgb(251,113,133)' : ev.type === 'moderate' ? 'rgb(251,191,36)' : 'rgb(56,189,248)'}` }}
+                    style={{ borderLeft: `2px solid ${remapColor(ev.type === 'severe' ? 'rgb(251,113,133)' : ev.type === 'moderate' ? 'rgb(251,191,36)' : 'rgb(56,189,248)', isDark)}` }}
                     onMouseEnter={e => (e.currentTarget.style.background = c.hover)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <div className="flex-shrink-0 mt-0.5" style={{ color: ev.type === 'severe' ? 'rgb(251,113,133)' : ev.type === 'moderate' ? 'rgb(251,191,36)' : 'rgb(56,189,248)' }}>
+                    <div className="flex-shrink-0 mt-0.5" style={{ color: remapColor(ev.type === 'severe' ? 'rgb(251,113,133)' : ev.type === 'moderate' ? 'rgb(251,191,36)' : 'rgb(56,189,248)', isDark) }}>
                       {WEATHER_ICONS_REACT[ev.icon] || <CloudLightning className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] font-medium" style={{ color: c.t2 }}>{ev.title}</div>
                       <div className="text-[9px] mt-0.5" style={{ color: c.t4 }}>{ev.date} · {ev.opcos.join(', ')}</div>
-                      <div className="text-[9px] font-medium mt-0.5" style={{ color: ev.type === 'severe' ? 'rgba(251,113,133,0.7)' : ev.type === 'moderate' ? 'rgba(251,191,36,0.6)' : 'rgba(56,189,248,0.6)' }}>
+                      <div className="text-[9px] font-medium mt-0.5" style={{ color: remapColor(ev.type === 'severe' ? 'rgb(251,113,133)' : ev.type === 'moderate' ? 'rgb(251,191,36)' : 'rgb(56,189,248)', isDark) }}>
                         {(ev.outages / 1000).toFixed(0)}K customers affected
                       </div>
                     </div>
@@ -428,20 +488,20 @@ export default function RiskIntelligencePage() {
           <div className="absolute bottom-5 left-5 z-[1000] rounded-lg p-3 backdrop-blur-xl transition-colors duration-300"
             style={{ background: c.legendBg, border: `1px solid ${c.border}` }}>
             <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: c.t3 }}>Outage Density (events/yr)</h4>
-            <div className="w-32 h-2 rounded" style={{ background: 'linear-gradient(to right,#1a1a2e,#3b0764,#7c2d12,#dc2626,#fbbf24)' }} />
+            <div className="w-32 h-2 rounded" style={{ background: c.heatLegendGrad }} />
             <div className="flex justify-between mt-1"><span className="text-[10px]" style={{ color: c.t3 }}>Low</span><span className="text-[10px]" style={{ color: c.t3 }}>Critical</span></div>
             <div className="mt-2.5">
               <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: c.t3 }}>Substation Health (n={stats.total})</h4>
-              <div className="flex items-center gap-2 mb-1"><div className="w-2.5 h-2.5 rounded-full bg-emerald-400" /><span className="text-[10px]" style={{ color: c.t3 }}>Good (&gt;75%)</span></div>
-              <div className="flex items-center gap-2 mb-1"><div className="w-2.5 h-2.5 rounded-full bg-amber-400" /><span className="text-[10px]" style={{ color: c.t3 }}>Fair (50–75%)</span></div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-rose-400" /><span className="text-[10px]" style={{ color: c.t3 }}>Critical (&lt;50%)</span></div>
+              <div className="flex items-center gap-2 mb-1"><div className="w-2.5 h-2.5 rounded-full" style={{ background: c.dotGood }} /><span className="text-[10px]" style={{ color: c.t3 }}>Good (&gt;75%)</span></div>
+              <div className="flex items-center gap-2 mb-1"><div className="w-2.5 h-2.5 rounded-full" style={{ background: c.dotFair }} /><span className="text-[10px]" style={{ color: c.t3 }}>Fair (50–75%)</span></div>
+              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{ background: c.dotCrit }} /><span className="text-[10px]" style={{ color: c.t3 }}>Critical (&lt;50%)</span></div>
               <p className="text-[8px] mt-1.5 leading-relaxed" style={{ color: c.t5 }}>Fleet: 6,230 transformers · Showing 1:10.5 sample<br/>Marker size ∝ voltage class · Labels at zoom ≥10</p>
             </div>
           </div>
         </div>
 
         {/* ─── Right Panel ─── */}
-        <div className="w-[320px] flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-300"
+        <div className="w-[320px] flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-300 relative z-10"
           style={{ borderLeft: `1px solid ${c.border}`, background: c.surface }}>
           <div className="flex-1 overflow-y-auto scrollbar-thin">
 
@@ -449,7 +509,7 @@ export default function RiskIntelligencePage() {
               <div className="flex items-end gap-0.5 h-12">
                 {OUTAGE_TREND.map(d => (
                   <div key={d.yr} className="flex-1 rounded-t relative group cursor-pointer" style={{ height: `${(d.count / maxOutage) * 100}%`, background: c.barBg }}>
-                    <div className="absolute bottom-0 w-full rounded-t" style={{ height: `${(d.weather / d.count) * 100}%`, background: 'rgba(244,63,94,0.35)' }} />
+                    <div className="absolute bottom-0 w-full rounded-t" style={{ height: `${(d.weather / d.count) * 100}%`, background: remapColor('rgba(244,63,94,0.35)', isDark) }} />
                     <div className="hidden group-hover:block absolute bottom-[calc(100%+4px)] left-1/2 -translate-x-1/2 rounded px-1.5 py-1 text-[9px] whitespace-nowrap z-10"
                       style={{ background: c.surface, border: `1px solid ${c.border}`, color: c.t2 }}>
                       {d.yr}: {d.count.toLocaleString()} total · {d.weather.toLocaleString()} weather
@@ -469,7 +529,7 @@ export default function RiskIntelligencePage() {
                     <span className="text-[10px] w-[72px] text-right flex-shrink-0" style={{ color: c.t3 }}>{d.cause}</span>
                     <div className="flex-1 h-4 rounded overflow-hidden" style={{ background: c.barTrack }}>
                       <div className="h-full rounded flex items-center justify-end pr-1.5 transition-all duration-700"
-                        style={{ width: `${(d.hours / maxImpact) * 100}%`, background: d.color }}>
+                        style={{ width: `${(d.hours / maxImpact) * 100}%`, background: remapColor(d.color, isDark) }}>
                         <span className="text-[9px] font-mono text-white/90">{(d.hours / 1e6).toFixed(1)}M</span>
                       </div>
                     </div>
@@ -482,11 +542,11 @@ export default function RiskIntelligencePage() {
               <div className="flex flex-col gap-1">
                 {FAILURE_MODES.map(d => (
                   <div key={d.name} className="flex items-center gap-1.5 py-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: remapColor(d.color, isDark) }} />
                     <span className="text-[10px] flex-1" style={{ color: c.t3 }}>{d.name}</span>
                     <span className="text-[10px] font-mono" style={{ color: c.t2 }}>{d.pct}%</span>
                     <div className="w-12 h-1 rounded overflow-hidden" style={{ background: c.barTrack }}>
-                      <div className="h-full rounded" style={{ width: `${(d.pct / 28) * 100}%`, background: d.color }} />
+                      <div className="h-full rounded" style={{ width: `${(d.pct / 28) * 100}%`, background: remapColor(d.color, isDark) }} />
                     </div>
                   </div>
                 ))}
@@ -499,7 +559,7 @@ export default function RiskIntelligencePage() {
                   <div key={d.range} className="flex items-center gap-1.5">
                     <span className="text-[9px] w-14 text-right flex-shrink-0" style={{ color: c.t4 }}>{d.range}</span>
                     <div className="flex-1 h-2.5 rounded overflow-hidden" style={{ background: c.barTrack }}>
-                      <div className="h-full rounded" style={{ width: `${(d.count / maxAge) * 100}%`, background: d.color }} />
+                      <div className="h-full rounded" style={{ width: `${(d.count / maxAge) * 100}%`, background: remapColor(d.color, isDark) }} />
                     </div>
                     <span className="text-[9px] font-mono w-6" style={{ color: c.t4 }}>{d.count}</span>
                   </div>
@@ -562,7 +622,7 @@ function StatCard({ c, label, value, color, sub, subUp, subDown }: { c: ReturnTy
     <div className="rounded-md p-2.5 transition-colors duration-300" style={{ background: c.statBg, border: `1px solid ${c.statBorder}` }}>
       <div className="text-[9px] uppercase tracking-wider mb-0.5" style={{ color: c.t4 }}>{label}</div>
       <div className="text-lg font-semibold font-mono" style={{ color }}>{value}</div>
-      <div className="text-[9px] mt-0.5 flex items-center gap-1" style={{ color: subUp ? 'rgba(251,113,133,0.7)' : subDown ? 'rgba(52,211,153,0.7)' : c.t4 }}>{sub}</div>
+      <div className="text-[9px] mt-0.5 flex items-center gap-1" style={{ color: subUp ? c.subUp : subDown ? c.subDown : c.t4 }}>{sub}</div>
     </div>
   );
 }
