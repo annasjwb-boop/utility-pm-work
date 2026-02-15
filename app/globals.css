@@ -586,10 +586,14 @@ body {
 [data-theme="light"] .bg-white\/\[0\.08\] { background-color: rgba(0,0,0,0.04) !important; }
 [data-theme="light"] .bg-white\/\[0\.10\] { background-color: rgba(0,0,0,0.05) !important; }
 [data-theme="light"] .bg-white\/5 { background-color: rgba(0,0,0,0.03) !important; }
+[data-theme="light"] .bg-white\/3 { background-color: rgba(0,0,0,0.02) !important; }
+[data-theme="light"] .bg-white\/8 { background-color: rgba(0,0,0,0.04) !important; }
 [data-theme="light"] .bg-white\/10 { background-color: rgba(0,0,0,0.05) !important; }
 [data-theme="light"] .bg-white\/15 { background-color: rgba(0,0,0,0.08) !important; }
 [data-theme="light"] .bg-white\/20 { background-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .bg-white\/30 { background-color: rgba(0,0,0,0.1) !important; }
 [data-theme="light"] .bg-white\/50 { background-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .bg-white\/60 { background-color: rgba(0,0,0,0.1) !important; }
 
 /* Black-alpha backgrounds → lighter variants */
 [data-theme="light"] .bg-black\/50 { background-color: rgba(255,255,255,0.5) !important; }
@@ -636,14 +640,20 @@ body {
 [data-theme="light"] .border-white\/\[0\.10\] { border-color: rgba(0,0,0,0.1) !important; }
 [data-theme="light"] .border-white\/\[0\.12\] { border-color: rgba(0,0,0,0.1) !important; }
 [data-theme="light"] .border-white\/5 { border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .border-white\/8 { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .border-white\/12 { border-color: rgba(0,0,0,0.1) !important; }
 
 /* --- Divide Overrides --- */
 [data-theme="light"] .divide-white\/5 > * + * { border-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .divide-white\/\[0\.05\] > * + * { border-color: rgba(0,0,0,0.05) !important; }
 [data-theme="light"] .divide-white\/\[0\.06\] > * + * { border-color: rgba(0,0,0,0.06) !important; }
 
 /* --- Ring / Outline Overrides --- */
 [data-theme="light"] .ring-white\/10 { --tw-ring-color: rgba(0,0,0,0.08) !important; }
 [data-theme="light"] .ring-white\/20 { --tw-ring-color: rgba(0,0,0,0.1) !important; }
+[data-theme="light"] .ring-white\/40 { --tw-ring-color: rgba(0,0,0,0.2) !important; }
+[data-theme="light"] .ring-white\/50 { --tw-ring-color: rgba(0,0,0,0.25) !important; }
+[data-theme="light"] .ring-white\/60 { --tw-ring-color: rgba(0,0,0,0.3) !important; }
 [data-theme="light"] .outline-white\/10 { outline-color: rgba(0,0,0,0.08) !important; }
 
 /* --- Scrollbar --- */
@@ -788,11 +798,19 @@ body {
 [data-theme="light"] .hover\:bg-white\/\[0\.10\]:hover { background-color: rgba(0,0,0,0.06) !important; }
 [data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.06) !important; }
 [data-theme="light"] .hover\:text-white:hover { color: #1e1b4b !important; }
+[data-theme="light"] .hover\:text-white\/50:hover { color: #4338ca !important; }
+[data-theme="light"] .hover\:text-white\/55:hover { color: #4b5563 !important; }
+[data-theme="light"] .hover\:text-white\/60:hover { color: #3730a3 !important; }
 [data-theme="light"] .hover\:text-white\/70:hover { color: #312e81 !important; }
 [data-theme="light"] .hover\:text-white\/80:hover { color: #1e1b4b !important; }
 [data-theme="light"] .hover\:text-white\/90:hover { color: #1e1b4b !important; }
+[data-theme="light"] .hover\:border-white\/10:hover { border-color: rgba(0,0,0,0.1) !important; }
 [data-theme="light"] .hover\:border-white\/15:hover { border-color: rgba(0,0,0,0.12) !important; }
 [data-theme="light"] .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.15) !important; }
+[data-theme="light"] .hover\:border-white\/25:hover { border-color: rgba(0,0,0,0.16) !important; }
+[data-theme="light"] .hover\:border-white\/30:hover { border-color: rgba(0,0,0,0.18) !important; }
+[data-theme="light"] .hover\:border-white\/40:hover { border-color: rgba(0,0,0,0.22) !important; }
+[data-theme="light"] .hover\:border-white\/50:hover { border-color: rgba(0,0,0,0.28) !important; }
 
 /* --- Shadow Adjustments --- */
 [data-theme="light"] .shadow-lg { box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; }
