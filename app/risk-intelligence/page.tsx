@@ -351,14 +351,21 @@ export default function RiskIntelligencePage() {
 
   // ─── Theme change: swap tiles, heatmap, re-render assets, rebind popups ───
   useEffect(() => {
-    if (!mapInstanceRef.current || !tileLayerRef.current || !leafletRef.current) return;
+    if (!mapInstanceRef.current || !leafletRef.current || !mapReady) return;
     const Leaf = leafletRef.current;
     const map = mapInstanceRef.current;
     const groups = layerGroupsRef.current;
     const currentC = T(theme);
 
-    map.removeLayer(tileLayerRef.current);
-    tileLayerRef.current = Leaf.tileLayer(TILES[theme], { maxZoom: 19 }).addTo(map);
+    // Swap tile layer — remove old safely, add new and send to back
+    try {
+      if (tileLayerRef.current && map.hasLayer(tileLayerRef.current)) {
+        map.removeLayer(tileLayerRef.current);
+      }
+    } catch (_) { /* layer already removed */ }
+    const newTiles = Leaf.tileLayer(TILES[theme], { maxZoom: 19 }).addTo(map);
+    newTiles.bringToBack();
+    tileLayerRef.current = newTiles;
 
     // Rebuild heatmap with new gradient
     if ((window as any).L?.heatLayer && heatLayerRef.current) {
