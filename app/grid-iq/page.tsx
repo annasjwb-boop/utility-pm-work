@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useTheme } from '@/lib/theme-context';
 import {
   Brain,
   FlaskConical,
@@ -285,6 +286,19 @@ function UnifiedTree() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [decision, setDecision] = useState<'pending' | 'approved' | 'deferred'>('pending');
   const deepLinked = useRef(false);
+  const { isDark } = useTheme();
+
+  // Theme-aware SVG colors (inline strokes can't use CSS overrides)
+  const svgC = {
+    line: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(30,27,75,0.25)',
+    lineFaint: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(30,27,75,0.12)',
+    lineStrong: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(30,27,75,0.3)',
+    dash: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(30,27,75,0.18)',
+    dot: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(30,27,75,0.3)',
+    dotFaint: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(30,27,75,0.2)',
+    dotFallback: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(30,27,75,0.15)',
+    label: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(30,27,75,0.5)',
+  };
 
   // Deep-linking via ?id= or ?asset=
   useEffect(() => {
@@ -364,13 +378,13 @@ function UnifiedTree() {
                   return (
                     <g key={`${cluster.id}-${bi}`}>
                       {/* Trigger → Agent (trigger bottom ≈ +14+st, agent top ≈ -16) */}
-                      <AnimatedPath d={`M ${bx},${ROW.trigger + 14 + st} C ${bx},${ROW.trigger + 40 + st} ${bx},${ROW.agent - 40} ${bx},${ROW.agent - 16}`} visible={reveal >= 2} delay={ci * 120 + bi * 60} color="rgba(255,255,255,0.35)" width={1.5} />
+                      <AnimatedPath d={`M ${bx},${ROW.trigger + 14 + st} C ${bx},${ROW.trigger + 40 + st} ${bx},${ROW.agent - 40} ${bx},${ROW.agent - 16}`} visible={reveal >= 2} delay={ci * 120 + bi * 60} color={svgC.line} width={1.5} />
 
                       {/* Agent → Finding (agent bottom ≈ +28, finding top ≈ -10+st) */}
-                      <AnimatedPath d={`M ${bx},${ROW.agent + 28} C ${bx},${ROW.agent + 60} ${bx},${ROW.finding - 35 + st} ${bx},${ROW.finding - 10 + st}`} visible={reveal >= 3} delay={ci * 150 + bi * 60} color="rgba(255,255,255,0.35)" width={1.5} />
+                      <AnimatedPath d={`M ${bx},${ROW.agent + 28} C ${bx},${ROW.agent + 60} ${bx},${ROW.finding - 35 + st} ${bx},${ROW.finding - 10 + st}`} visible={reveal >= 3} delay={ci * 150 + bi * 60} color={svgC.line} width={1.5} />
 
                       {/* Finding → Deep (finding bottom ≈ +22+st, deep top ≈ -14+st) */}
-                      <AnimatedPath d={`M ${bx},${ROW.finding + 22 + st} L ${bx},${ROW.deep - 14 + st}`} visible={reveal >= 4} delay={ci * 150 + bi * 80} color={agent?.dotColor || 'rgba(255,255,255,0.2)'} width={2} />
+                      <AnimatedPath d={`M ${bx},${ROW.finding + 22 + st} L ${bx},${ROW.deep - 14 + st}`} visible={reveal >= 4} delay={ci * 150 + bi * 80} color={agent?.dotColor || svgC.dotFallback} width={2} />
 
                       {/* Deep → Root Cause (deep bottom ≈ +28+st, root top ≈ -18) */}
                       <AnimatedPath
@@ -382,19 +396,19 @@ function UnifiedTree() {
 
                       {/* Pulse dots on convergence */}
                       {reveal >= 5 && (
-                        <PulseDot pathId={convId} dur={2.5} delay={ci * 0.3 + bi * 0.3} color={agent?.dotColor || 'rgba(255,255,255,0.3)'} />
+                        <PulseDot pathId={convId} dur={2.5} delay={ci * 0.3 + bi * 0.3} color={agent?.dotColor || svgC.dotFaint} />
                       )}
                     </g>
                   );
                 })}
 
                 {/* Root Cause → Scenario (root bottom ≈ +44, scenario top ≈ -20) */}
-                <AnimatedPath d={`M ${cx},${ROW.crossVal + 44} L ${cx},${ROW.scenario - 20}`} visible={reveal >= 6} delay={ci * 150} color="rgba(255,255,255,0.4)" width={2} />
+                <AnimatedPath d={`M ${cx},${ROW.crossVal + 44} L ${cx},${ROW.scenario - 20}`} visible={reveal >= 6} delay={ci * 150} color={svgC.lineStrong} width={2} />
 
                 {/* Selected expansion connector */}
                 {selectedId === cluster.scenarioId && (
                   <line x1={cx} y1={ROW.scenario + 46} x2={cx} y2={TREE_H}
-                    stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeDasharray="4,4" />
+                    stroke={svgC.lineFaint} strokeWidth="2" strokeDasharray="4,4" />
                 )}
               </g>
             );
@@ -417,12 +431,12 @@ function UnifiedTree() {
                   id={pathId}
                   d={`M ${fromBx},${fromY} C ${midX},${midY} ${midX},${midY} ${toBx},${toY}`}
                   visible={reveal >= 5} delay={600 + li * 300}
-                  color="rgba(255,255,255,0.22)" width={1.5} dash
+                  color={svgC.dash} width={1.5} dash
                 />
                 {reveal >= 5 && (
-                  <PulseDot pathId={pathId} dur={4} delay={1 + li * 0.5} color="rgba(255,255,255,0.4)" />
+                  <PulseDot pathId={pathId} dur={4} delay={1 + li * 0.5} color={svgC.dot} />
                 )}
-                <text x={midX} y={midY + 12} fill="rgba(255,255,255,0.35)" fontSize="9"
+                <text x={midX} y={midY + 12} fill={svgC.label} fontSize="9"
                   textAnchor="middle" fontFamily="monospace"
                   className={`transition-opacity duration-500 ${reveal >= 5 ? 'opacity-100' : 'opacity-0'}`}
                   style={{ transitionDelay: `${900 + li * 300}ms` }}>
