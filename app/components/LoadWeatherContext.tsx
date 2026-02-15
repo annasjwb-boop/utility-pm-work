@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import {
   Thermometer, Cloud, CloudRain, CloudSnow, CloudLightning,
   Sun, Wind, Zap, TrendingUp, TrendingDown, AlertTriangle,
-  Gauge, Clock, Activity,
+  Gauge, Clock, Activity, Droplets, RotateCcw, Flame, ShieldAlert,
 } from 'lucide-react';
 
 // ── Seeded RNG ──
@@ -20,7 +20,7 @@ function tagToSeed(tag: string): number {
   return Math.abs(h) || 1;
 }
 
-// ── Load Profile Generator ──
+// ── Types ──
 interface LoadPoint { hour: number; load: number; peak: boolean; }
 interface WeatherContext {
   condition: string;
@@ -32,34 +32,94 @@ interface WeatherContext {
   riskLevel: 'low' | 'medium' | 'high';
 }
 
+interface LoadStressMetrics {
+  thermalCycles7d: number;
+  maxSwingAmplitude: number;
+  overloadEvents12mo: number;
+  overloadHours12mo: number;
+  lossOfLifeFactor: number;
+  loadFactor: number;
+  hotspotRiseC: number;
+  emergencyLoadEvents: number;
+}
+
+interface EnvironmentalExposure {
+  installationType: string;
+  freezeThawCycles12mo: number;
+  highHumidityHours12mo: number;
+  extremeHeatDays12mo: number;
+  lightningEvents12mo: number;
+  tempSwingRange12mo: number;
+  precipitationDays12mo: number;
+  windLoadEvents12mo: number;
+  corrosionIndex: string;
+  uvExposureRating: string;
+}
+
+// ── Generators ──
+
 function generateLoadProfile(baseLoad: number, seed: number): LoadPoint[] {
   const rng = seededRng(seed);
   const points: LoadPoint[] = [];
-  // 7-day hourly profile (168 hours)
   for (let h = 0; h < 168; h++) {
     const dayHour = h % 24;
     const dayOfWeek = Math.floor(h / 24);
     const isWeekend = dayOfWeek >= 5;
-
-    // Diurnal pattern: low overnight, morning ramp, afternoon peak, evening decline
     let diurnal = 0.6;
-    if (dayHour >= 6 && dayHour < 9) diurnal = 0.6 + (dayHour - 6) * 0.1; // morning ramp
+    if (dayHour >= 6 && dayHour < 9) diurnal = 0.6 + (dayHour - 6) * 0.1;
     else if (dayHour >= 9 && dayHour < 12) diurnal = 0.9 + rng() * 0.05;
-    else if (dayHour >= 12 && dayHour < 17) diurnal = 0.95 + rng() * 0.08; // afternoon peak
-    else if (dayHour >= 17 && dayHour < 21) diurnal = 0.85 + rng() * 0.05; // evening
+    else if (dayHour >= 12 && dayHour < 17) diurnal = 0.95 + rng() * 0.08;
+    else if (dayHour >= 17 && dayHour < 21) diurnal = 0.85 + rng() * 0.05;
     else if (dayHour >= 21) diurnal = 0.7 - (dayHour - 21) * 0.03;
-
     if (isWeekend) diurnal *= 0.85;
-
-    // Random noise + occasional spikes
     const noise = (rng() - 0.5) * 0.06;
     const spike = rng() > 0.97 ? 0.1 + rng() * 0.08 : 0;
     const loadPct = Math.min(105, Math.max(30, baseLoad * diurnal + noise * baseLoad + spike * baseLoad));
     const isPeak = loadPct > baseLoad * 0.95;
-
     points.push({ hour: h, load: Math.round(loadPct * 10) / 10, peak: isPeak });
   }
   return points;
+}
+
+function generateLoadStress(loadProfile: LoadPoint[], baseLoad: number, health: number, age: number, seed: number): LoadStressMetrics {
+  const rng = seededRng(seed + 3333);
+
+  // Thermal cycles: crossings above 70% threshold (winding expansion/contraction)
+  const threshold = 70;
+  let cycles = 0;
+  let wasAbove = loadProfile[0].load > threshold;
+  for (let i = 1; i < loadProfile.length; i++) {
+    const isAbove = loadProfile[i].load > threshold;
+    if (isAbove && !wasAbove) cycles++;
+    wasAbove = isAbove;
+  }
+
+  // Max swing: largest hour-to-hour delta
+  let maxSwing = 0;
+  for (let i = 1; i < loadProfile.length; i++) {
+    maxSwing = Math.max(maxSwing, Math.abs(loadProfile[i].load - loadProfile[i - 1].load));
+  }
+
+  // Overload scaling with health (worse health → historically overloaded more)
+  const overloadFactor = (100 - health) / 50;
+  const overloadEvents12mo = Math.floor((8 + rng() * 12) * overloadFactor);
+  const overloadHours12mo = Math.floor(overloadEvents12mo * (2 + rng() * 6));
+  const emergencyLoadEvents = Math.floor(overloadEvents12mo * (0.15 + rng() * 0.2));
+
+  // IEEE C57.91 loss-of-life acceleration
+  const avgLoad = loadProfile.reduce((s, p) => s + p.load, 0) / loadProfile.length;
+  const peakLoad = Math.max(...loadProfile.map(p => p.load));
+  const loadFactor = Math.round(avgLoad / peakLoad * 100) / 100;
+
+  // Hotspot rise: ~55°C at rated, scales with load^1.6
+  const hotspotRiseC = Math.round((55 * (avgLoad / 100) ** 1.6 + rng() * 5) * 10) / 10;
+
+  // Aging factor: age + thermal stress
+  const ageFactor = Math.min(2.5, 1 + (age - 25) * 0.03);
+  const loadAgingFactor = avgLoad > 80 ? Math.pow(2, (hotspotRiseC - 55) / 6) : 1.0;
+  const lossOfLifeFactor = Math.round(Math.max(0.5, ageFactor * loadAgingFactor) * 100) / 100;
+
+  return { thermalCycles7d: cycles, maxSwingAmplitude: Math.round(maxSwing * 10) / 10, overloadEvents12mo, overloadHours12mo, lossOfLifeFactor, loadFactor, hotspotRiseC, emergencyLoadEvents };
 }
 
 function generateWeather(seed: number, health: number): WeatherContext {
@@ -72,18 +132,45 @@ function generateWeather(seed: number, health: number): WeatherContext {
     { condition: 'Cold Snap', icon: 'snow', tempF: 18 + Math.floor(rng() * 12), humidity: 40 + Math.floor(rng() * 20), forecast: 'Arctic front arriving overnight. Wind chill advisory.', riskFactor: 'Cold load pickup / ice', riskLevel: 'high' },
     { condition: 'Windy', icon: 'wind', tempF: 55 + Math.floor(rng() * 15), humidity: 45 + Math.floor(rng() * 15), forecast: 'Sustained winds 25–35 mph. Gusts to 50 mph possible.', riskFactor: 'Vegetation contact risk', riskLevel: 'medium' },
   ];
-
-  // Bias toward worse weather for worse health
-  const idx = health < 40
-    ? [0, 2, 4][Math.floor(rng() * 3)]  // heat, storms, cold for critical
-    : health < 60
-      ? [3, 5, 1][Math.floor(rng() * 3)] // rain, wind, cloudy for degraded
-      : Math.floor(rng() * conditions.length);
-
+  const idx = health < 40 ? [0, 2, 4][Math.floor(rng() * 3)] : health < 60 ? [3, 5, 1][Math.floor(rng() * 3)] : Math.floor(rng() * conditions.length);
   return conditions[idx];
 }
 
-// ── Weather Icon Component ──
+function generateEnvironmentalExposure(seed: number, health: number, age: number, kv: string, weather: WeatherContext): EnvironmentalExposure {
+  const rng = seededRng(seed + 7777);
+  const kvNum = parseInt(kv) || 69;
+
+  // Installation type from voltage class
+  const installationType = kvNum >= 115 ? 'Outdoor substation' : kvNum >= 34 ? 'Pad-mount (enclosed)' : rng() > 0.5 ? 'Pad-mount (enclosed)' : 'Vault (underground)';
+  const isOutdoor = installationType.includes('Outdoor');
+  const isVault = installationType.includes('Vault');
+
+  const baseFT = isOutdoor ? 45 + Math.floor(rng() * 30) : isVault ? 5 + Math.floor(rng() * 10) : 20 + Math.floor(rng() * 15);
+  const freezeThawCycles12mo = Math.floor(baseFT * (1 + (age - 20) * 0.005));
+
+  const baseHumidity = isVault ? 2800 + Math.floor(rng() * 1200) : isOutdoor ? 1200 + Math.floor(rng() * 800) : 600 + Math.floor(rng() * 500);
+  const highHumidityHours12mo = Math.floor(baseHumidity * (1 + (100 - health) * 0.005));
+
+  const extremeHeatDays12mo = isOutdoor ? 25 + Math.floor(rng() * 30) : isVault ? 5 + Math.floor(rng() * 8) : 12 + Math.floor(rng() * 15);
+
+  const lightningBase = isOutdoor ? 3 + Math.floor(rng() * 8) : isVault ? 0 : Math.floor(rng() * 2);
+  const lightningEvents12mo = weather.icon === 'storm' ? lightningBase + 2 : lightningBase;
+
+  const tempSwingRange12mo = isOutdoor ? 95 + Math.floor(rng() * 25) : isVault ? 35 + Math.floor(rng() * 15) : 65 + Math.floor(rng() * 20);
+
+  const precipitationDays12mo = isOutdoor ? 85 + Math.floor(rng() * 40) : isVault ? 0 : 30 + Math.floor(rng() * 20);
+
+  const windLoadEvents12mo = isOutdoor ? 8 + Math.floor(rng() * 15) : 0;
+
+  const corrosionScore = (highHumidityHours12mo / 4000) + (age / 80) + (isOutdoor ? 0.3 : isVault ? 0.4 : 0.1);
+  const corrosionIndex = corrosionScore > 1.2 ? 'High' : corrosionScore > 0.8 ? 'Elevated' : corrosionScore > 0.4 ? 'Moderate' : 'Low';
+
+  const uvExposureRating = !isOutdoor ? 'Minimal' : age > 35 ? 'Severe' : age > 20 ? 'High' : 'Moderate';
+
+  return { installationType, freezeThawCycles12mo, highHumidityHours12mo, extremeHeatDays12mo, lightningEvents12mo, tempSwingRange12mo, precipitationDays12mo, windLoadEvents12mo, corrosionIndex, uvExposureRating };
+}
+
+// ── UI Helpers ──
 const WEATHER_ICONS: Record<string, React.ReactNode> = {
   sun: <Sun className="w-4 h-4" />,
   cloud: <Cloud className="w-4 h-4" />,
@@ -99,25 +186,18 @@ const RISK_COLORS = {
   high: { text: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
 };
 
-// ── Sparkline SVG ──
 function LoadSparkline({ points, width = 320, height = 48 }: { points: LoadPoint[]; width?: number; height?: number }) {
   const maxLoad = Math.max(...points.map(p => p.load));
   const minLoad = Math.min(...points.map(p => p.load));
   const range = maxLoad - minLoad || 1;
-
   const pathD = points.map((p, i) => {
     const x = (i / (points.length - 1)) * width;
     const y = height - ((p.load - minLoad) / range) * (height - 4) - 2;
     return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
-
-  // Area fill
   const areaD = pathD + ` L ${width},${height} L 0,${height} Z`;
-
-  // Peak zones
-  const peakRects = [];
-  let inPeak = false;
-  let peakStart = 0;
+  const peakRects: React.ReactNode[] = [];
+  let inPeak = false, peakStart = 0;
   points.forEach((p, i) => {
     if (p.peak && !inPeak) { inPeak = true; peakStart = i; }
     if (!p.peak && inPeak) {
@@ -127,7 +207,6 @@ function LoadSparkline({ points, width = 320, height = 48 }: { points: LoadPoint
       peakRects.push(<rect key={`p-${peakStart}`} x={x1} y={0} width={x2 - x1} height={height} fill="rgba(244,63,94,0.08)" />);
     }
   });
-
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ height }} preserveAspectRatio="none">
       {peakRects}
@@ -143,6 +222,17 @@ function LoadSparkline({ points, width = 320, height = 48 }: { points: LoadPoint
   );
 }
 
+function WarnStat({ label, value, unit, threshold, above = true }: { label: string; value: number; unit?: string; threshold: number; above?: boolean }) {
+  const isWarn = above ? value >= threshold : value <= threshold;
+  const display = typeof value === 'number' && value >= 1000 ? value.toLocaleString() : value;
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-[8px] text-white/25 uppercase tracking-wide">{label}</span>
+      <span className={`text-[9px] font-mono font-medium ${isWarn ? 'text-rose-400' : 'text-white/55'}`}>{display}{unit || ''}</span>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // EXPORTED COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -151,27 +241,33 @@ interface ContextPanelProps {
   assetTag?: string;
   baseLoad?: number;
   health?: number;
+  age?: number;
+  kv?: string;
 }
 
-export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health = 50 }: ContextPanelProps) {
+export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health = 50, age = 30, kv = '138' }: ContextPanelProps) {
   const seed = tagToSeed(assetTag);
 
   const loadProfile = useMemo(() => generateLoadProfile(baseLoad, seed), [baseLoad, seed]);
   const weather = useMemo(() => generateWeather(seed, health), [seed, health]);
+  const loadStress = useMemo(() => generateLoadStress(loadProfile, baseLoad, health, age, seed), [loadProfile, baseLoad, health, age, seed]);
+  const envExposure = useMemo(() => generateEnvironmentalExposure(seed, health, age, kv, weather), [seed, health, age, kv, weather]);
   const riskStyle = RISK_COLORS[weather.riskLevel];
 
-  // Summary stats
   const last24h = loadProfile.slice(-24);
   const currentLoad = last24h[last24h.length - 1].load;
   const avgLoad = Math.round(last24h.reduce((s, p) => s + p.load, 0) / last24h.length * 10) / 10;
   const peakLoad = Math.round(Math.max(...last24h.map(p => p.load)) * 10) / 10;
   const peakHours = last24h.filter(p => p.peak).length;
 
+  const corrosionColors: Record<string, string> = { Low: 'text-emerald-400', Moderate: 'text-white/55', Elevated: 'text-amber-400', High: 'text-rose-400' };
+  const uvColors: Record<string, string> = { Minimal: 'text-emerald-400', Moderate: 'text-white/55', High: 'text-amber-400', Severe: 'text-rose-400' };
+
   return (
     <div className="rounded-lg border border-white/8 bg-white/[0.015] mb-4 overflow-hidden">
       <div className="grid grid-cols-[1fr_auto] divide-x divide-white/5">
 
-        {/* Load Signal */}
+        {/* ═══ Load Signal ═══ */}
         <div className="p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -189,16 +285,35 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
             <LoadSparkline points={loadProfile} width={800} height={44} />
           </div>
           <div className="flex justify-between mt-1 text-[8px] text-white/20 font-mono px-0.5">
-            <span>7d ago</span>
-            <span>5d</span>
-            <span>3d</span>
-            <span>Yesterday</span>
-            <span>Now</span>
+            <span>7d ago</span><span>5d</span><span>3d</span><span>Yesterday</span><span>Now</span>
+          </div>
+
+          {/* ── Load Stress Metrics ── */}
+          <div className="mt-2.5 pt-2 border-t border-white/[0.04]">
+            <div className="flex items-center gap-1 mb-1.5">
+              <Gauge className="w-3 h-3 text-violet-400/50" />
+              <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">Lifetime Load Stress</span>
+            </div>
+            <div className="grid grid-cols-4 gap-x-4 gap-y-1">
+              <WarnStat label="Thermal cycles (7d)" value={loadStress.thermalCycles7d} threshold={14} />
+              <WarnStat label="Max swing" value={loadStress.maxSwingAmplitude} unit="%" threshold={15} />
+              <WarnStat label="Load factor" value={loadStress.loadFactor} threshold={0.6} above={false} />
+              <WarnStat label="Hotspot rise" value={loadStress.hotspotRiseC} unit="°C" threshold={55} />
+              <WarnStat label="Overloads (12 mo)" value={loadStress.overloadEvents12mo} threshold={12} />
+              <WarnStat label="Overload hours" value={loadStress.overloadHours12mo} unit="h" threshold={40} />
+              <WarnStat label="Emergency loads" value={loadStress.emergencyLoadEvents} threshold={3} />
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] text-white/25 uppercase tracking-wide">IEEE aging</span>
+                <span className={`text-[9px] font-mono font-bold ${
+                  loadStress.lossOfLifeFactor > 2 ? 'text-rose-400' : loadStress.lossOfLifeFactor > 1.5 ? 'text-amber-400' : 'text-emerald-400'
+                }`}>{loadStress.lossOfLifeFactor}×</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Weather & Context */}
-        <div className="p-3 w-[280px] flex flex-col gap-2">
+        {/* ═══ Weather & Context ═══ */}
+        <div className="p-3 w-[300px] flex flex-col gap-2">
           <div className="flex items-center gap-1.5 mb-0.5">
             <Thermometer className="w-3.5 h-3.5 text-sky-400" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Weather / Context</span>
@@ -219,6 +334,37 @@ export function LoadWeatherContext({ assetTag = 'default', baseLoad = 75, health
           <div className={`flex items-center gap-1.5 px-2 py-1 rounded border text-[9px] font-medium ${riskStyle.text} ${riskStyle.bg} ${riskStyle.border}`}>
             <AlertTriangle className="w-3 h-3 flex-shrink-0" />
             <span>{weather.riskFactor}</span>
+          </div>
+
+          {/* ── Environmental Exposure ── */}
+          <div className="mt-1 pt-2 border-t border-white/[0.04]">
+            <div className="flex items-center gap-1 mb-1.5">
+              <ShieldAlert className="w-3 h-3 text-sky-400/50" />
+              <span className="text-[8px] font-bold uppercase tracking-widest text-white/25">12-Month Exposure</span>
+            </div>
+
+            <div className="flex items-center gap-1 mb-1.5">
+              <span className="text-[8px] text-white/25 uppercase tracking-wide">Install</span>
+              <span className="text-[9px] font-medium text-white/60">{envExposure.installationType}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+              <WarnStat label="Freeze-thaw" value={envExposure.freezeThawCycles12mo} unit=" cyc" threshold={60} />
+              <WarnStat label="Temp range" value={envExposure.tempSwingRange12mo} unit="°F" threshold={100} />
+              <WarnStat label="High RH hrs" value={envExposure.highHumidityHours12mo} unit="h" threshold={2000} />
+              <WarnStat label="Extreme heat" value={envExposure.extremeHeatDays12mo} unit="d" threshold={35} />
+              <WarnStat label="Lightning" value={envExposure.lightningEvents12mo} unit=" events" threshold={5} />
+              <WarnStat label="Precip days" value={envExposure.precipitationDays12mo} unit="d" threshold={100} />
+              <WarnStat label="Wind loads" value={envExposure.windLoadEvents12mo} unit=" events" threshold={12} />
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] text-white/25 uppercase tracking-wide">Corrosion</span>
+                <span className={`text-[9px] font-mono font-medium ${corrosionColors[envExposure.corrosionIndex] || 'text-white/55'}`}>{envExposure.corrosionIndex}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-[8px] text-white/25 uppercase tracking-wide">UV exposure</span>
+              <span className={`text-[9px] font-mono font-medium ${uvColors[envExposure.uvExposureRating] || 'text-white/55'}`}>{envExposure.uvExposureRating}</span>
+            </div>
           </div>
         </div>
       </div>

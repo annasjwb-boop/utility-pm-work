@@ -355,6 +355,8 @@ function UnifiedTree() {
                 assetTag={scenario?.assetTag || cluster.id}
                 baseLoad={cluster.id === 'c1' ? 82 : cluster.id === 'c2' ? 71 : 78}
                 health={cluster.id === 'c1' ? 38 : cluster.id === 'c2' ? 44 : 46}
+                age={cluster.id === 'c1' ? 51 : cluster.id === 'c2' ? 38 : 42}
+                kv={cluster.id === 'c1' ? '230' : cluster.id === 'c2' ? '138' : '345'}
               />
             </div>
           );
