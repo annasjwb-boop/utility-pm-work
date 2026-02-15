@@ -37,7 +37,6 @@ import {
   DGAReading,
   TransformerAsset,
 } from '@/lib/transformer-iot/types';
-import { LoadWeatherContext } from '@/app/components/LoadWeatherContext';
 import { getSubstationAsset, synthesizeWorkOrders, type WorkOrder } from '@/lib/exelon/asset-bridge';
 import {
   generateTransformerAsset,
@@ -988,58 +987,6 @@ function AlarmEventsPanel({ events, onEventClick }: {
   );
 }
 
-// ──────────────────── Thermal Diagram ─────────────────────────────
-function ThermalDiagram({ transformer }: { transformer: TransformerAsset }) {
-  const { thermal, metrics } = transformer;
-  const hotSpotColor = thermal.windingHotSpot > 105 ? 'text-rose-400/70' : thermal.windingHotSpot > 90 ? 'text-amber-400/70' : 'text-emerald-400/60';
-  const topOilColor = thermal.topOilTemp > 85 ? 'text-rose-400/70' : thermal.topOilTemp > 75 ? 'text-amber-400/70' : 'text-emerald-400/60';
-
-  return (
-    <div className="p-4 rounded-xl bg-blue-500/[0.02] border border-blue-500/10">
-      <h3 className="text-xs font-semibold text-white/80 flex items-center gap-2 mb-3">
-        <Thermometer className="w-4 h-4 text-cyan-400/50" />
-        Thermal Profile
-      </h3>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="text-center">
-          <div className={`text-2xl font-bold ${topOilColor}`}>{thermal.topOilTemp.toFixed(0)}°C</div>
-          <div className="text-[10px] text-white/40">Top Oil</div>
-        </div>
-        <div className="text-center">
-          <div className={`text-2xl font-bold ${hotSpotColor}`}>{thermal.windingHotSpot.toFixed(0)}°C</div>
-          <div className="text-[10px] text-white/40">Winding Hot Spot</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-white/60">{thermal.bottomOilTemp.toFixed(0)}°C</div>
-          <div className="text-[10px] text-white/40">Bottom Oil</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-white/60">{thermal.ambientTemp.toFixed(0)}°C</div>
-          <div className="text-[10px] text-white/40">Ambient</div>
-        </div>
-      </div>
-      <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-        <div>
-          <span className="text-white/30">Cooling: </span>
-          <span className="text-cyan-400/50 font-medium">{thermal.coolingMode}</span>
-        </div>
-        <div>
-          <span className="text-white/30">Fans: </span>
-          <span className="text-white/60">{thermal.fansRunning}</span>
-        </div>
-        <div>
-          <span className="text-white/30">Pumps: </span>
-          <span className="text-white/60">{thermal.pumpsRunning}</span>
-        </div>
-        <div>
-          <span className="text-white/30">Tap: </span>
-          <span className="text-white/60">{metrics.tapPosition}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ══════════════════════ MAIN DASHBOARD ═════════════════════════════
 // ════════════════════════════════════════════════════════════════
 // WORK ORDER HISTORY — 24-month maintenance log for critical assets
@@ -1357,37 +1304,26 @@ function TransformerIoTDashboard() {
         </div>
       </div>
 
-      {/* Load & Weather Context */}
-      {riskAsset && (
-        <div className="max-w-[2000px] mx-auto px-6 pt-4">
-          <LoadWeatherContext
-            assetTag={assetTag}
-            baseLoad={riskAsset.load}
-            health={riskAsset.health}
-            age={riskAsset.age}
-            kv={riskAsset.kv}
-          />
-        </div>
-      )}
+      {/* Main Content */}
+      <main className="max-w-[2000px] mx-auto px-6 py-4 space-y-5">
 
-      {/* Main Content — clean 2-column layout */}
-      <main className="max-w-[2000px] mx-auto px-6 py-4">
+        {/* Sensors — full-width 6-col */}
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
+          <h2 className="text-xs font-semibold text-white/60 flex items-center gap-2 mb-3">
+            <Gauge className="w-3.5 h-3.5 text-cyan-400/40" />
+            Sensors
+          </h2>
+          <div className="grid grid-cols-6 gap-2">
+            {transformer.sensors.map(sensor => (
+              <SensorCard key={sensor.id} sensor={sensor} />
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-12 gap-6">
 
           {/* ── Left: Operational Data ── */}
           <div className="col-span-5 space-y-5">
-            {/* Sensors — compact 3-col */}
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
-              <h2 className="text-xs font-semibold text-white/60 flex items-center gap-2 mb-3">
-                <Gauge className="w-3.5 h-3.5 text-cyan-400/40" />
-                Sensors
-              </h2>
-              <div className="grid grid-cols-3 gap-2">
-                {transformer.sensors.map(sensor => (
-                  <SensorCard key={sensor.id} sensor={sensor} />
-                ))}
-              </div>
-            </div>
 
             {/* DGA Trend */}
             <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
@@ -1481,15 +1417,6 @@ function TransformerIoTDashboard() {
                 </Link>
               );
             })()}
-
-            {/* Thermal Diagram */}
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
-              <h2 className="text-xs font-semibold text-white/60 flex items-center gap-2 mb-3">
-                <Thermometer className="w-3.5 h-3.5 text-amber-400/40" />
-                Thermal Profile
-              </h2>
-              <ThermalDiagram transformer={transformer} />
-            </div>
 
             {/* Work Order History */}
             {workOrders.length > 0 && (
