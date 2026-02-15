@@ -75,11 +75,18 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
+import { useTheme } from '@/lib/theme-context';
 
 const COLORS = ['#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
 export default function ESGPage() {
   const router = useRouter();
+  const { isDark } = useTheme();
+  const chartGrid = isDark ? '#333' : '#e5e7eb';
+  const chartAxis = isDark ? '#666' : '#9ca3af';
+  const chartTick = isDark ? '#888' : '#6b7280';
+  const chartTooltip = { backgroundColor: isDark ? '#1a1a1a' : '#fff', border: `1px solid ${isDark ? '#333' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#fff' : '#111' };
   const [assetEmissions, setAssetEmissions] = useState<AssetEmissions[]>([]);
   const [gridSummary, setGridSummary] = useState<GridEmissionsSummary | null>(null);
   const [complianceTargets, setComplianceTargets] = useState<ComplianceTarget[]>([]);
@@ -484,6 +491,7 @@ export default function ESGPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <button 
                 onClick={exportDataAsCSV}
                 disabled={isExporting || assetEmissions.length === 0}
@@ -627,11 +635,11 @@ export default function ESGPage() {
                           <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="month" stroke="#666" tick={{ fill: '#888', fontSize: 12 }} />
-                      <YAxis stroke="#666" tick={{ fill: '#888', fontSize: 12 }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+                      <XAxis dataKey="month" stroke={chartAxis} tick={{ fill: chartTick, fontSize: 12 }} />
+                      <YAxis stroke={chartAxis} tick={{ fill: chartTick, fontSize: 12 }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
+                        contentStyle={chartTooltip}
                         labelStyle={{ color: '#fff' }}
                       />
                       <Area type="monotone" dataKey="co2" stroke="#ef4444" strokeWidth={2} fill="url(#colorCO2)" name="CO₂ from Losses (t)" />
@@ -684,10 +692,10 @@ export default function ESGPage() {
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={emissionsByType} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-                      <XAxis type="number" stroke="#666" tick={{ fill: '#888', fontSize: 10 }} />
-                      <YAxis type="category" dataKey="name" stroke="#666" tick={{ fill: '#888', fontSize: 10 }} width={120} />
-                      <Tooltip contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} horizontal={false} />
+                      <XAxis type="number" stroke={chartAxis} tick={{ fill: chartTick, fontSize: 10 }} />
+                      <YAxis type="category" dataKey="name" stroke={chartAxis} tick={{ fill: chartTick, fontSize: 10 }} width={120} />
+                      <Tooltip contentStyle={chartTooltip} />
                       <Bar dataKey="co2" fill="#3b82f6" radius={[0, 4, 4, 0]} name="CO₂ (tonnes)" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -715,7 +723,7 @@ export default function ESGPage() {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }} />
+                      <Tooltip contentStyle={chartTooltip} />
                     </RechartsPie>
                   </ResponsiveContainer>
                 </div>

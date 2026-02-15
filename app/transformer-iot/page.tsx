@@ -44,6 +44,7 @@ import {
 } from '@/lib/transformer-iot/mock-data';
 import { Building, FileText, ClipboardList, ExternalLink } from 'lucide-react';
 import { getScenarioForAsset, type DemoScenario, type ScenarioEvent, type DecisionOption, type DecisionSupport } from '@/lib/demo-scenarios';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 
 // ──────────────────── Decision Brief Panel ────────────────────────────
 function DecisionBrief({
@@ -1127,6 +1128,7 @@ function TransformerIoTDashboard() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               {/* Health Index */}
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08]">
                 <Shield className="w-4 h-4 text-white/40" />

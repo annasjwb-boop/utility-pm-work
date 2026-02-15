@@ -12,6 +12,7 @@ import {
   Settings, Plus, Search, X, ExternalLink, Radio, Eye,
   BarChart3, Target, Timer, MapPin, DollarSign, Shield,
 } from 'lucide-react';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 import {
   DISPATCH_STATS, DISPATCH_WORK_ORDERS, DISRUPTIONS, GANTT_SCENARIOS,
   CREW_LEADS,
@@ -733,7 +734,8 @@ export default function DispatchPage() {
           <span className="text-white/10">|</span>
           <h1 className="text-sm font-semibold text-white/80">Dispatch</h1>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse" />
           <span className="text-[10px] text-white/25">SCADA Live</span>
         </div>

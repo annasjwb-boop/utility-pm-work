@@ -27,6 +27,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { DEMO_SCENARIOS, type DemoScenario, type DecisionSupport } from '@/lib/demo-scenarios';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 
 // ════════════════════════════════════════════════════════════════════════
 // TYPES & CONFIG
@@ -922,6 +923,7 @@ function GridIQContent() {
               <p className="text-xs text-white/40">Triggers → Agents → Findings → Deep Analysis → Root Cause → Scenario → Decision → Dispatch</p>
             </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

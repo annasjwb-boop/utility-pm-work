@@ -15,7 +15,10 @@ import {
   Leaf,
   Activity,
   MapPin,
+  Moon,
+  SunMedium,
 } from 'lucide-react';
+import { useTheme } from '@/lib/theme-context';
 
 interface HeaderProps {
   alertCount: number;
@@ -31,6 +34,7 @@ export function Header({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { isDark, toggle } = useTheme();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -50,7 +54,7 @@ export function Header({
   ];
 
   return (
-    <header className="h-12 border-b border-white/10 bg-black sticky top-0 z-50">
+    <header className="h-12 border-b border-white/10 bg-black sticky top-0 z-50 transition-colors duration-300">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Logo - always links to home */}
         <Link href="/" className="flex items-center gap-2 group">
@@ -59,7 +63,7 @@ export function Header({
             alt="IFS" 
             width={80} 
             height={24} 
-            className="h-5 w-auto"
+            className={`h-5 w-auto ${isDark ? '' : 'invert'}`}
           />
           <span className="text-sm text-white/40 hidden sm:block">//</span>
           <Zap className="h-3.5 w-3.5 text-white/50 hidden sm:block" />
@@ -92,6 +96,16 @@ export function Header({
               {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggle}
+            className="theme-toggle-btn flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all duration-300"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? <SunMedium className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
+            <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+          </button>
 
           <button
             onClick={onRefresh}
@@ -133,7 +147,7 @@ export function Header({
                 alt="IFS" 
                 width={60} 
                 height={20} 
-                className="h-4 w-auto"
+                className={`h-4 w-auto ${isDark ? '' : 'invert'}`}
               />
               <span className="text-white/40">//</span>
               <Zap className="h-3 w-3 text-white/50" />
