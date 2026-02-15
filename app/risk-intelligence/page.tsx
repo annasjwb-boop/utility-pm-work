@@ -246,6 +246,18 @@ export default function RiskIntelligencePage() {
 
           <div style="${sectionHead}">Required Skills</div>
           <div style="padding:2px 0 2px;line-height:1.8">${a.skills.map(sk => `<span style="${tag}">${sk}</span>`).join('')}</div>
+${a.health < 50 ? `
+          <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid ${currentC.popDivider}">
+            <a href="/grid-iq/asset?tag=${a.tag}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:600;color:${currentC.bg === '#000' ? '#c084fc' : '#7c3aed'};background:${currentC.bg === '#000' ? 'rgba(139,92,246,0.12)' : 'rgba(124,58,237,0.08)'};border:1px solid ${currentC.bg === '#000' ? 'rgba(139,92,246,0.25)' : 'rgba(124,58,237,0.2)'};text-decoration:none;cursor:pointer">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Grid IQ Diagnostic
+            </a>
+            <a href="/transformer-iot?asset=${a.tag}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:600;color:${currentC.bg === '#000' ? '#38bdf8' : '#2563eb'};background:${currentC.bg === '#000' ? 'rgba(56,189,248,0.12)' : 'rgba(37,99,235,0.08)'};border:1px solid ${currentC.bg === '#000' ? 'rgba(56,189,248,0.25)' : 'rgba(37,99,235,0.2)'};text-decoration:none;cursor:pointer">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Asset IoT View
+            </a>
+          </div>
+` : ''}
         </div>
       `, { maxWidth: 320 });
       groups.assets.addLayer(m);

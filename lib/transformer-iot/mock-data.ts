@@ -11,17 +11,30 @@ import {
 } from './types';
 import { TRANSFORMER_HEALTH_DATA } from '@/lib/datasets/transformer-health';
 import { EXELON_ASSETS } from '@/lib/exelon/fleet';
+import { getSubstationAsset, synthesizeExelonAsset, synthesizeHealthRecords } from '@/lib/exelon/asset-bridge';
 
 // Use BGE-TF-001 as the default monitored transformer (most interesting data — trending critical)
 const DEFAULT_ASSET_TAG = 'BGE-TF-001';
 
 function getLatestHealthRecord(assetTag: string) {
   const records = TRANSFORMER_HEALTH_DATA.filter(r => r.assetTag === assetTag);
-  return records.length > 0 ? records[records.length - 1] : null;
+  if (records.length > 0) return records[records.length - 1];
+  // Fallback: synthesize from risk-intelligence map asset
+  const riskAsset = getSubstationAsset(assetTag);
+  if (riskAsset) {
+    const synth = synthesizeHealthRecords(riskAsset);
+    return synth[synth.length - 1];
+  }
+  return null;
 }
 
 function getFleetAsset(assetTag: string) {
-  return EXELON_ASSETS.find(a => a.assetTag === assetTag);
+  const existing = EXELON_ASSETS.find(a => a.assetTag === assetTag);
+  if (existing) return existing;
+  // Fallback: synthesize from risk-intelligence map asset
+  const riskAsset = getSubstationAsset(assetTag);
+  if (riskAsset) return synthesizeExelonAsset(riskAsset);
+  return undefined;
 }
 
 // Generate realistic transformer sensor data from Kaggle dataset
