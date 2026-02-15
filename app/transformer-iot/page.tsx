@@ -1095,7 +1095,7 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
           <Calendar className="w-3.5 h-3.5 text-violet-400/40" />
           Work Order History — 24 Months
         </h2>
-        <div className="flex items-center gap-2 text-[9px]">
+        <div className="flex items-center gap-2 text-[10px]">
           <span className="text-white/30">{orders.length} total</span>
           <span className="text-white/20">·</span>
           <span className="text-white/30">${(totalCost / 1000).toFixed(0)}K spent</span>
@@ -1119,7 +1119,7 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
           const isActive = filter === t;
           return (
             <button key={t} onClick={() => setFilter(t)}
-              className={`px-2 py-0.5 rounded text-[9px] font-medium border transition-all ${
+              className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all ${
                 isActive
                   ? style ? `${style.color} ${style.bg} ${style.border}` : 'text-white/70 bg-white/10 border-white/15'
                   : 'text-white/30 bg-transparent border-white/5 hover:border-white/10'
@@ -1140,16 +1140,16 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
             <div key={wo.id}
               className={`border-b border-white/[0.03] last:border-0 transition-colors ${isExpanded ? 'bg-white/[0.02]' : 'hover:bg-white/[0.01]'}`}>
               <button onClick={() => setExpanded(isExpanded ? null : wo.id)}
-                className="w-full text-left px-2 py-2 flex items-center gap-2.5">
-                <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${style.bg}`}>
-                  <Icon className={`w-3 h-3 ${style.color}`} />
+                className="w-full text-left px-3 py-2.5 flex items-center gap-2.5">
+                <div className={`w-7 h-7 rounded flex items-center justify-center flex-shrink-0 ${style.bg}`}>
+                  <Icon className={`w-3.5 h-3.5 ${style.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-medium text-white/70 truncate">{wo.title}</span>
+                    <span className="text-xs font-medium text-white/70 truncate">{wo.title}</span>
                     {wo.finding && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[8px] text-white/30">
+                  <div className="flex items-center gap-1.5 text-[10px] text-white/30">
                     <span className="font-mono">{wo.date}</span>
                     <span>·</span>
                     <span className={`font-medium ${style.color}`}>{wo.type}</span>
@@ -1160,24 +1160,24 @@ function WorkOrderHistory({ orders }: { orders: WorkOrder[] }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-[8px] px-1.5 py-0.5 rounded ${WO_STATUS_STYLES[wo.status] || ''}`}>{wo.status}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${WO_STATUS_STYLES[wo.status] || ''}`}>{wo.status}</span>
                   {wo.priority !== 'routine' && (
-                    <span className={`text-[8px] font-bold uppercase ${WO_PRIORITY_STYLES[wo.priority]}`}>{wo.priority}</span>
+                    <span className={`text-[10px] font-bold uppercase ${WO_PRIORITY_STYLES[wo.priority]}`}>{wo.priority}</span>
                   )}
-                  <span className="text-[9px] font-mono text-white/25">${wo.cost >= 1000 ? `${(wo.cost / 1000).toFixed(0)}K` : wo.cost}</span>
+                  <span className="text-[10px] font-mono text-white/25">${wo.cost >= 1000 ? `${(wo.cost / 1000).toFixed(0)}K` : wo.cost}</span>
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-2 pb-2 pl-[42px] animate-in fade-in duration-200">
-                  <p className="text-[10px] text-white/45 leading-relaxed mb-1">{wo.description}</p>
+                <div className="px-3 pb-3 pl-[46px] animate-in fade-in duration-200">
+                  <p className="text-xs text-white/45 leading-relaxed mb-1">{wo.description}</p>
                   {wo.finding && (
                     <div className="flex items-start gap-1.5 mt-1.5 px-2 py-1.5 rounded bg-amber-500/[0.06] border border-amber-500/15">
                       <AlertTriangle className="w-3 h-3 text-amber-400/60 flex-shrink-0 mt-0.5" />
-                      <span className="text-[9px] text-amber-400/70">{wo.finding}</span>
+                      <span className="text-[10px] text-amber-400/70">{wo.finding}</span>
                     </div>
                   )}
-                  <div className="text-[8px] text-white/20 mt-1.5 font-mono">{wo.id}</div>
+                  <div className="text-[9px] text-white/20 mt-1.5 font-mono">{wo.id}</div>
                 </div>
               )}
             </div>
