@@ -1104,3 +1104,20 @@ body {
 [data-theme="light"] .border-red-500\/10 { border-color: rgba(220,38,38,0.1) !important; }
 [data-theme="light"] .border-red-500\/30 { border-color: rgba(220,38,38,0.2) !important; }
 [data-theme="light"] .border-red-500\/50 { border-color: rgba(220,38,38,0.35) !important; }
+
+/* ─── Grid IQ: Opaque node cards (prevent SVG lines bleeding through) ─── */
+.giq-node {
+  position: relative;
+  isolation: isolate;
+}
+.giq-node::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #000;
+  z-index: -1;
+}
+[data-theme="light"] .giq-node::before {
+  background: #f8f9fb;
+}

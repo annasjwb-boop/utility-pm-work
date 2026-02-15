@@ -459,7 +459,7 @@ function UnifiedTree() {
               <div key={`t-${ci}-${ti}`}
                 className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
                 style={{ left: `${x}%`, top: ROW.trigger - 18 + st, transitionDelay: `${ci * 150 + ti * 80}ms` }}>
-                <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded border max-w-[155px] ${TRIGGER_COLORS[trigger.color]}`}>
+                <div className={`giq-node flex items-center gap-1.5 px-2.5 py-1.5 rounded border max-w-[155px] ${TRIGGER_COLORS[trigger.color]}`}>
                   <TIcon className="w-3 h-3 flex-shrink-0" />
                   <div className="min-w-0 overflow-hidden">
                     <div className="text-[10px] font-bold leading-tight truncate">{trigger.label}</div>
@@ -480,7 +480,7 @@ function UnifiedTree() {
               <div key={`a-${ci}-${ai}`}
                 className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
                 style={{ left: `${x}%`, top: ROW.agent - 16, transitionDelay: `${ci * 150 + ai * 80}ms` }}>
-                <div className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded border ${agent.borderColor} ${agent.bgColor}`}>
+                <div className={`giq-node flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded border ${agent.borderColor} ${agent.bgColor}`}>
                   <span className={agent.color}>{agent.icon}</span>
                   <span className={`text-[10px] font-bold ${agent.color}`}>{agent.shortName}</span>
                   <span className={`text-[8px] font-mono transition-colors duration-500 ${reveal >= 3 ? 'text-emerald-400' : 'text-white/30'}`}>
@@ -502,7 +502,7 @@ function UnifiedTree() {
               <div key={`f-${ci}-${fi}`}
                 className={`absolute -translate-x-1/2 z-10 transition-all duration-400 ${reveal >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
                 style={{ left: `${x}%`, top: ROW.finding - 10 + st, transitionDelay: `${ci * 200 + fi * 100}ms` }}>
-                <div className={`text-[9px] font-mono font-semibold px-2 py-1 rounded border w-[135px] leading-snug overflow-hidden ${
+                <div className={`giq-node text-[9px] font-mono font-semibold px-2 py-1 rounded border w-[135px] leading-snug overflow-hidden ${
                   isCrit ? 'border-rose-500/30 bg-rose-500/[0.10] text-rose-300' : 'border-amber-500/30 bg-amber-500/[0.10] text-amber-300'
                 }`}>
                   <span className="line-clamp-2">{finding.text}</span>
@@ -522,7 +522,7 @@ function UnifiedTree() {
               <div key={`d-${ci}-${di}`}
                 className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
                 style={{ left: `${x}%`, top: ROW.deep - 14 + st, transitionDelay: `${ci * 200 + di * 120}ms` }}>
-                <div className={`w-[130px] px-2 py-1.5 rounded border overflow-hidden ${agent?.borderColor || 'border-white/10'} ${agent?.bgColor || 'bg-white/[0.03]'}`}>
+                <div className={`giq-node w-[130px] px-2 py-1.5 rounded border overflow-hidden ${agent?.borderColor || 'border-white/10'} ${agent?.bgColor || 'bg-white/[0.03]'}`}>
                   <div className={`text-[8px] font-bold uppercase tracking-wider ${agent?.color || 'text-white/50'} mb-0.5 truncate`}>{da.method}</div>
                   <div className="text-[9px] text-white/70 leading-snug line-clamp-2">{da.text}</div>
                 </div>
@@ -538,7 +538,7 @@ function UnifiedTree() {
             <div key={`cv-${ci}`}
               className={`absolute -translate-x-1/2 z-10 transition-all duration-500 ${reveal >= 5 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
               style={{ left: `${cluster.x}%`, top: ROW.crossVal - 18, transitionDelay: `${ci * 250}ms` }}>
-              <div className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg border-2 max-w-[200px] ${cc.border} ${cc.bg}`}>
+              <div className={`giq-node flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg border-2 max-w-[200px] ${cc.border} ${cc.bg}`}>
                 <div className="flex items-center gap-1.5">
                   <span className={`text-[9px] uppercase tracking-wider font-bold ${cc.text}`}>✓ Root Cause</span>
                   <span className={`text-[10px] font-mono font-bold ${cc.text}`}>{cluster.crossVal.confidence}%</span>
@@ -562,7 +562,7 @@ function UnifiedTree() {
               style={{ left: `${cluster.x}%`, top: ROW.scenario - 20, transitionDelay: `${ci * 200}ms` }}>
               <button
                 onClick={() => handleScenarioClick(cluster.scenarioId)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer max-w-[170px] ${
+                className={`giq-node flex flex-col items-center gap-1 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer max-w-[170px] ${
                   isSelected
                     ? `${config.border} ${config.bg} ring-1 ring-white/10 shadow-lg shadow-white/5`
                     : 'border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/15'
