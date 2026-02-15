@@ -482,7 +482,7 @@ export default function RiskIntelligencePage() {
                       { id: 'transformers', label: 'Transformers', icon: <Zap className="w-2.5 h-2.5" />, count: assets.length, active: true },
                       { id: 'breakers', label: 'Breakers', icon: <Shield className="w-2.5 h-2.5" />, count: 842, active: false },
                       { id: 'switches', label: 'Switches', icon: <Activity className="w-2.5 h-2.5" />, count: 1204, active: false },
-                      { id: 'capacitors', label: 'Capacitors', icon: <Gauge className="w-2.5 h-2.5" />, count: 376, active: false },
+                      { id: 'capacitors', label: 'Batteries / Capacitors', icon: <Gauge className="w-2.5 h-2.5" />, count: 376, active: false },
                       { id: 'regulators', label: 'Regulators', icon: <Thermometer className="w-2.5 h-2.5" />, count: 518, active: false },
                     ].map(at => (
                       <button key={at.id} className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all"
