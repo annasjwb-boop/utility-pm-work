@@ -37,7 +37,7 @@ export function getSubstationAsset(tag: string): SubstationAsset | null {
 }
 
 export function getCriticalAssets(): SubstationAsset[] {
-  return getFleet().filter(a => a.health < 50);
+  return getFleet().filter(a => a.health < 50 && parseFloat(a.kv) >= 69);
 }
 
 // ══════════════════════════════════════════════════════════════════
